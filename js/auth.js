@@ -1,7 +1,7 @@
-// Auth — Google Sign-In + family join
+// Auth — Google Sign-In + family join + email login
 import { auth, googleProvider } from './firebase.js';
 import {
-  signInWithPopup, signOut, onAuthStateChanged
+  signInWithPopup, signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from 'https://esm.sh/firebase@10.12.0/auth';
 
 export class Auth {
@@ -16,6 +16,11 @@ export class Auth {
 
   async login() {
     const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  }
+
+  async loginWithEmail(email, password) {
+    const result = await signInWithEmailAndPassword(auth, email, password);
     return result.user;
   }
 
