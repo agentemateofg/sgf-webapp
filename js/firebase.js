@@ -1,7 +1,7 @@
 // Firebase v9 Modular SDK — init + exports
-import { initializeApp } from 'https://esm.sh/firebase@10.12.0/app';
-import { getAuth, GoogleAuthProvider } from 'https://esm.sh/firebase@10.12.0/auth';
-import { getFirestore } from 'https://esm.sh/firebase@10.12.0/firestore';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);

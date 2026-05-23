@@ -825,7 +825,7 @@ const state = {
   presets: { duration: { step:5, min:0, max:120, val:30 }, calories: { step:10, min:0, max:800, val:150 } }
 };
 
-const auth = new Auth((u) => { state.user = u; window.app?.onAuthChange(u); });
+const auth = new Auth();
 const db = new DB(auth);
 
 window.app = {
@@ -1323,6 +1323,9 @@ window.app = {
     }
   }
 };
+
+// Start listening for Auth changes only after window.app is completely defined
+auth.startListening((u) => { state.user = u; window.app.onAuthChange(u); });
 
 function escapeHtml(s) {
   if (!s) return '';

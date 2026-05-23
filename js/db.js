@@ -4,7 +4,7 @@ import {
   collection, doc, addDoc, getDoc, setDoc, getDocs,
   query, where, orderBy, onSnapshot, serverTimestamp,
   writeBatch, updateDoc, deleteDoc
-} from 'https://esm.sh/firebase@10.12.0/firestore';
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 export class DB {
   constructor(auth) { this.auth = auth; }

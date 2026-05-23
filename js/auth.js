@@ -1,13 +1,15 @@
-// Auth — Google Sign-In + family join + email login
 import { auth, googleProvider } from './firebase.js';
 import {
   signInWithPopup, signInWithEmailAndPassword, signOut, onAuthStateChanged
-} from 'https://esm.sh/firebase@10.12.0/auth';
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 export class Auth {
-  constructor(onChange) {
+  constructor() {
     this.user = null;
     this.familyId = localStorage.getItem('sgf-familyId') || null;
+  }
+
+  startListening(onChange) {
     onAuthStateChanged(auth, u => {
       this.user = u;
       onChange?.(u);
