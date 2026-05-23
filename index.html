@@ -78,6 +78,28 @@ body { padding: 0 1rem 7rem; }
   transform: translateY(-4px) scale(1.006);
 }
 
+/* ── Member-specific card hover glows ── */
+.card.member-mateo:hover {
+  border-color: rgba(79, 195, 247, 0.42) !important;
+  box-shadow: 0 16px 40px rgba(79, 195, 247, 0.15), 0 20px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.card.member-monica:hover {
+  border-color: rgba(244, 143, 177, 0.42) !important;
+  box-shadow: 0 16px 40px rgba(244, 143, 177, 0.15), 0 20px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.card.member-moni:hover {
+  border-color: rgba(206, 147, 216, 0.42) !important;
+  box-shadow: 0 16px 40px rgba(206, 147, 216, 0.15), 0 20px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.card.member-bienestar:hover {
+  border-color: rgba(167, 139, 250, 0.45) !important;
+  box-shadow: 0 16px 40px rgba(167, 139, 250, 0.15), 0 20px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.card.member-nutricion:hover {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  box-shadow: 0 16px 40px rgba(251, 191, 36, 0.15), 0 20px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
 /* ── Login / Onboarding screens ── */
 .login-wrap {
   min-height: 100vh; flex-direction:column; align-items:center; justify-content:center;
@@ -1147,23 +1169,33 @@ window.app = {
       comida:'🍽️', agua:'💧', lectura:'📖', otro:'✨'
     };
 
+    const COLORS = { mateo:'#4fc3f7', monica:'#f48fb1', moni:'#ce93d8', familia:'#69f0ae', otro:'#94a3b8' };
+
     list.innerHTML = state.activities.slice(0, 30).map(a => {
       const icon = typeIcons[a.type] || '✨';
       const name = a.userName || 'Alguien';
       const dur = a.duration ? `${a.duration} min` : '';
       const cal = a.calories ? `• ${a.calories} kcal` : '';
       const note = a.notes ? `<div class="feed-text">${escapeHtml(a.notes)}</div>` : '';
+
+      const member = state.members.find(m => m.id === a.uid);
+      const pKey = member ? (window.app?.getPersonKey(member.id, member.name, member.email) || 'otro') : 'otro';
+      const col = COLORS[pKey] || COLORS.otro;
+      
+      const avatarStyle = `border-color: ${col}44; background: ${col}12; color: ${col}; font-weight: 800; text-shadow: 0 0 6px ${col}40;`;
+      const badgeStyle = `background: ${col}10; color: ${col}; border-color: ${col}30;`;
+
       return `
-        <div class="feed-item" data-id="${a.id}">
-          <div class="feed-avatar">${(state.members.find(m=>m.id===a.uid)?.name||'').charAt(0).toUpperCase()||'👤'}</div>
+        <div class="feed-item" data-id="${a.id}" style="border-left: 3.5px solid ${col}cc;">
+          <div class="feed-avatar" style="${avatarStyle}">${(state.members.find(m=>m.id===a.uid)?.name||'').charAt(0).toUpperCase()||'👤'}</div>
           <div class="feed-body">
             <div class="feed-top">
-              <span class="feed-name">${escapeHtml(name)}</span>
+              <span class="feed-name" style="color: ${col}; opacity: 0.95;">${escapeHtml(name)}</span>
               <span class="feed-time">${fmtDate(a.date)}</span>
             </div>
             <div style="display:flex;gap:0.4rem;align-items:center;">
-              <span class="feed-badge">${icon} ${a.type}</span>
-              ${dur ? `<span style="font-size:0.78rem;color:var(--txt-3)">${dur} ${cal}</span>` : ''}
+              <span class="feed-badge" style="${badgeStyle}">${icon} ${a.type}</span>
+              ${dur ? `<span style="font-size:0.78rem;color:var(--txt-2)">${dur} ${cal}</span>` : ''}
             </div>
             ${note}
           </div>

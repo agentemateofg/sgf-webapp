@@ -169,7 +169,7 @@ export class UI {
 
     // ── Card 1: Métricas de hoy ──
     const card = document.createElement('div');
-    card.className = 'card glass';
+    card.className = 'card glass member-' + person;
     card.style.borderColor = col + '55';
     card.innerHTML = `
       <div class="card-header"><span class="icon">📊</span> ${NAMES[person]} — Hoy</div>
@@ -205,7 +205,7 @@ export class UI {
 
     // ── Card 2: Check-in de Bienestar ──
     const wCard = document.createElement('div');
-    wCard.className = 'card glass';
+    wCard.className = 'card glass member-bienestar';
     wCard.style.borderColor = 'rgba(167,139,250,0.35)';
     wCard.innerHTML = `
       <div class="card-header"><span class="icon">🧠</span> Check-in de Bienestar</div>
@@ -237,7 +237,7 @@ export class UI {
 
     // ── Card 2.5: Alimentación y Macronutrientes ──
     const nCard = document.createElement('div');
-    nCard.className = 'card glass';
+    nCard.className = 'card glass member-nutricion';
     nCard.style.borderColor = '#fbbf2455';
     
     const calCons = pData.calorias_consumidas || 0;
@@ -295,7 +295,7 @@ export class UI {
 
     // ── Card 3: Gráfico SVG semanal de Actividades ──
     const chartCard = document.createElement('div');
-    chartCard.className = 'card glass full';
+    chartCard.className = 'card glass full member-' + person;
     chartCard.style.borderColor = col + '33';
     const chartHtml = this._buildWeekChart(person, col, appState);
     chartCard.innerHTML = `
