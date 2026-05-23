@@ -825,7 +825,7 @@ const state = {
   presets: { duration: { step:5, min:0, max:120, val:30 }, calories: { step:10, min:0, max:800, val:150 } }
 };
 
-const auth = new Auth((u) => { state.user = u; app.onAuthChange(u); });
+const auth = new Auth((u) => { state.user = u; window.app?.onAuthChange(u); });
 const db = new DB(auth);
 
 window.app = {
@@ -924,9 +924,6 @@ window.app = {
 
   /* ── Auth flow ── */
   onAuthChange(u) {
-    const loginScreen = document.getElementById('screen-login');
-    const familyScreen = document.getElementById('screen-family');
-    const appScreen = document.getElementById('screen-app');
     const userPill = document.getElementById('userPill');
     const userPhoto = document.getElementById('userPhoto');
     const userName = document.getElementById('userName');
@@ -939,20 +936,18 @@ window.app = {
 
     // Show user pill
     userPill.style.display = 'flex';
-    
-    // Set custom avatar if photoURL is not present (silent login)
     if (u.photoURL) {
       userPhoto.src = u.photoURL;
     } else {
       const isMateo = u.email === 'mateo.ou@gmail.com';
-      userPhoto.src = isMateo 
+      userPhoto.src = isMateo
         ? 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%234fc3f7"/><circle cx="50" cy="40" r="20" fill="%230b1020"/><path d="M20,90 C20,70 30,60 50,60 C70,60 80,70 80,90" fill="%230b1020"/></svg>'
         : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f48fb1"/><circle cx="50" cy="40" r="20" fill="%230b1020"/><path d="M20,90 C20,70 30,60 50,60 C70,60 80,70 80,90" fill="%230b1020"/></svg>';
     }
-
     userPhoto.alt = u.displayName || 'Usuario';
     userName.textContent = (u.displayName || u.email?.split('@')[0] || 'Tú');
-    userPill.onclick = () => { if(confirm('¿Cerrar sesión?')) auth.logout(); };
+    const self = this;
+    userPill.onclick = () => { if(confirm('¿Cerrar sesión?')) self.auth.logout(); };
 
     const savedFamily = localStorage.getItem('sgf-familyId');
     if (savedFamily) {
@@ -972,7 +967,6 @@ window.app = {
   async loginAs(profile) {
     const email = profile === 'mateo' ? 'mateo.ou@gmail.com' : '1976Monicagc@dompavolei.com';
     const password = 'familia123';
-    
     const cards = document.querySelectorAll('.identity-card');
     cards.forEach(c => {
       if (c.textContent.toLowerCase().includes(profile)) {
@@ -980,33 +974,29 @@ window.app = {
         c.style.opacity = '0.7';
       }
     });
-
     try {
-      console.log('Iniciando sesión silenciosa para:', email);
       await this.auth.loginWithEmail(email, password);
-      console.log('Sesión iniciada con éxito!');
-      // Automatically redirect to the corresponding profile tab
+      // onAuthChange will handle screen transition
+      // After auth settles, focus the correct tab
+      const self = this;
       setTimeout(() => {
         const targetTab = profile === 'mateo' ? 'mateo' : 'monica';
         const tabEl = document.querySelector(`.tab-v2[data-target="${targetTab}"]`);
         if (tabEl) {
           document.querySelectorAll('.tab-v2').forEach(t => t.classList.remove('active'));
           tabEl.classList.add('active');
-          this.initApp();
+          self.renderAll();
         }
-      }, 300);
+      }, 400);
     } catch(e) {
-      console.error('Error de autenticación:', e);
+      console.error('loginAs error:', e);
       alert('Error de conexión: ' + (e.message || e));
-      cards.forEach(c => {
-        c.style.transform = '';
-        c.style.opacity = '';
-      });
+      cards.forEach(c => { c.style.transform = ''; c.style.opacity = ''; });
     }
   },
 
   async googleLogin() {
-    try { await auth.login(); } catch(e) { alert('No se pudo iniciar sesión: ' + (e.message||e)); }
+    try { await this.auth.login(); } catch(e) { alert('No se pudo iniciar sesión: ' + (e.message||e)); }
   },
 
   /* ── Family onboarding ── */
@@ -1016,8 +1006,8 @@ window.app = {
     if (!name) { alert('Escribe un nombre para la familia'); return; }
     if (!state.user) { alert('Inicia sesión primero'); return; }
     try {
-      const code = await db.createFamily(name, state.user);
-      auth.setFamily(code);
+      const code = await this.db.createFamily(name, state.user);
+      this.auth.setFamily(code);
       state.familyId = code;
       document.getElementById('createCode').style.display = 'block';
       document.getElementById('lblCreateCode').textContent = code;
@@ -1032,8 +1022,8 @@ window.app = {
     if (!state.user) { alert('Inicia sesión primero'); return; }
     const errEl = document.getElementById('joinError');
     try {
-      await db.joinFamily(code, state.user);
-      auth.setFamily(code);
+      await this.db.joinFamily(code, state.user);
+      this.auth.setFamily(code);
       state.familyId = code;
       errEl.style.display = 'none';
       this.showScreen('screen-app');
@@ -1050,18 +1040,19 @@ window.app = {
 
     // V2: realtime subscriptions
     if (state.familyId) {
-      this._unsubActs = db.subscribeActivities(items => {
+      const self = this;
+      this._unsubActs = this.db.subscribeActivities(items => {
         state.activities = items;
-        this.renderFeed();
-        this.renderAll();
+        self.renderFeed();
+        self.renderAll();
       });
-      this._unsubMembers = db.subscribeMembers(items => {
+      this._unsubMembers = this.db.subscribeMembers(items => {
         state.members = items;
-        this.renderAll();
+        self.renderAll();
       });
-      this._unsubWellness = db.subscribeWellness(items => {
+      this._unsubWellness = this.db.subscribeWellness(items => {
         state.wellness = items;
-        this.renderAll();
+        self.renderAll();
       });
     }
   },
@@ -1333,24 +1324,21 @@ function escapeHtml(s) {
 
 /* ── Wire DOM listeners after DOM ready ── */
 document.addEventListener('DOMContentLoaded', () => {
-  const btnGoogle = document.getElementById('btnGoogle');
-  if (btnGoogle) btnGoogle.addEventListener('click', () => app.googleLogin());
-
   const btnCreate = document.getElementById('btnCreateFam');
-  if (btnCreate) btnCreate.addEventListener('click', () => app.createFamily());
+  if (btnCreate) btnCreate.addEventListener('click', () => window.app.createFamily());
 
   const btnJoin = document.getElementById('btnJoinFam');
-  if (btnJoin) btnJoin.addEventListener('click', () => app.joinFamily());
+  if (btnJoin) btnJoin.addEventListener('click', () => window.app.joinFamily());
 
   const btnLogoutOb = document.getElementById('btnLogoutOb');
-  if (btnLogoutOb) btnLogoutOb.addEventListener('click', () => auth.logout());
+  if (btnLogoutOb) btnLogoutOb.addEventListener('click', () => window.app.auth.logout());
 
   // Activity type chips
   document.querySelectorAll('#actTypeChips .chip').forEach(b => {
     b.addEventListener('click', () => {
       document.querySelectorAll('#actTypeChips .chip').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
-      app.updateActivityModalUI(b.dataset.type);
+      window.app.updateActivityModalUI(b.dataset.type);
     });
   });
 
@@ -1365,7 +1353,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Render personal tab with live data
       const p = tab.dataset.target;
       if (['mateo','monica','moni'].includes(p)) {
-        app.legacyUI.renderPerson(p, app.getActiveData()[p], app.gamification);
+        window.app.legacyUI.renderPerson(p, window.app.getActiveData()[p], window.app.gamification);
       }
     });
   });
@@ -1377,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // If user already known at module load, trigger
-if (state.user) app.onAuthChange(state.user);
+if (state.user) window.app.onAuthChange(state.user);
 </script>
 </body>
 </html>
