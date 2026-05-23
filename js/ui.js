@@ -160,28 +160,31 @@ export class UI {
     grid.innerHTML = '';
 
     const col = COLORS[person];
+    const appState = window.app?.state;
 
+    // ── Card 1: Métricas de hoy ──
     const card = document.createElement('div');
     card.className = 'card glass';
     card.style.borderColor = col + '55';
     card.innerHTML = `
-      <div class="card-header"><span class="icon">📊</span> ${NAMES[person]}</div>
+      <div class="card-header"><span class="icon">📊</span> ${NAMES[person]} — Hoy</div>
       <div class="metric">
-        <div class="metric-label"><span>Pasos</span><span style="color:var(--text2)">${pData.pasos_diarios?.toLocaleString()||0} / ${pData.pasos_objetivo_diario?.toLocaleString()||8000}</span></div>
+        <div class="metric-label"><span>🚶 Pasos</span><span style="color:var(--txt-2)">${(pData.pasos_diarios||0).toLocaleString()} / ${(pData.pasos_objetivo_diario||8000).toLocaleString()}</span></div>
         <div class="metric-bar-wrap"><div class="metric-bar" style="width:0%;background:${col};"></div></div>
       </div>
       <div class="metric">
-        <div class="metric-label"><span>Sueño</span><span style="color:var(--text2)">${pData.sueno_horas||0}h / ${pData.sueno_objetivo_horas||8}h</span></div>
+        <div class="metric-label"><span>😴 Sueño</span><span style="color:var(--txt-2)">${pData.sueno_horas||0}h / ${pData.sueno_objetivo_horas||8}h</span></div>
         <div class="metric-bar-wrap"><div class="metric-bar" style="width:0%;background:${col};"></div></div>
       </div>
       <div class="metric">
-        <div class="metric-label"><span>Estrés (1-5)</span><span style="color:var(--text2)">${pData.nivel_estres||0}</span></div>
+        <div class="metric-label"><span>😤 Estrés</span><span style="color:var(--txt-2)">${this._stressLabel(pData.nivel_estres||3)}</span></div>
         <div class="metric-bar-wrap"><div class="metric-bar" style="width:0%;background:linear-gradient(90deg,#ef4444,#f97316);"></div></div>
       </div>
       <div class="metric">
-        <div class="metric-label"><span>Energía (1-5)</span><span style="color:var(--text2)">${pData.nivel_energia||0}</span></div>
+        <div class="metric-label"><span>⚡ Energía</span><span style="color:var(--txt-2)">${this._energyLabel(pData.nivel_energia||3)}</span></div>
         <div class="metric-bar-wrap"><div class="metric-bar" style="width:0%;background:${col};"></div></div>
       </div>
+      ${pData.peso_kg ? `<div style="margin-top:0.8rem;font-size:0.82rem;color:var(--txt-3);text-align:right;">⚖️ Peso: <strong style="color:var(--txt-2)">${pData.peso_kg} kg</strong></div>` : ''}
     `;
     grid.appendChild(card);
 
@@ -194,7 +197,147 @@ export class UI {
         bars[3].style.width = ((pData.nivel_energia||0)*20) + '%';
       }, 80);
     });
+
+    // ── Card 2: Check-in de Bienestar ──
+    const wCard = document.createElement('div');
+    wCard.className = 'card glass';
+    wCard.style.borderColor = 'rgba(167,139,250,0.35)';
+    wCard.innerHTML = `
+      <div class="card-header"><span class="icon">🧠</span> Check-in de Bienestar</div>
+      <div class="wellness-row">
+        <div class="wellness-field">
+          <label class="wellness-label">😤 Estrés</label>
+          <div class="wellness-stars" id="wEstresStars_${person}" data-field="wEstres_${person}" data-max="5"></div>
+          <input type="hidden" id="wEstres_${person}" value="${pData.nivel_estres||3}">
+        </div>
+        <div class="wellness-field">
+          <label class="wellness-label">⚡ Energía</label>
+          <div class="wellness-stars" id="wEnergiaStars_${person}" data-field="wEnergia_${person}" data-max="5"></div>
+          <input type="hidden" id="wEnergia_${person}" value="${pData.nivel_energia||3}">
+        </div>
+      </div>
+      <div class="wellness-row" style="margin-top:0.6rem;align-items:center;">
+        <label class="wellness-label" style="flex:1;">⚖️ Peso (kg)</label>
+        <input type="number" id="wPeso_${person}" class="input-glass" step="0.1" min="20" max="200"
+          value="${pData.peso_kg||''}" placeholder="—" style="width:90px;text-align:center;padding:0.45rem;">
+      </div>
+      <button id="wSave_${person}" class="btn btn-primary" style="width:100%;margin-top:0.9rem;"
+        onclick="window.app.saveWellnessCheckin('${person}')">💾 Guardar Check-in</button>
+    `;
+    grid.appendChild(wCard);
+
+    // Render star selectors
+    this._renderStars(`wEstresStars_${person}`, `wEstres_${person}`, pData.nivel_estres||3, '#ef4444');
+    this._renderStars(`wEnergiaStars_${person}`, `wEnergia_${person}`, pData.nivel_energia||3, col);
+
+    // ── Card 3: Gráfico SVG semanal de Actividades ──
+    const chartCard = document.createElement('div');
+    chartCard.className = 'card glass full';
+    chartCard.style.borderColor = col + '33';
+    const chartHtml = this._buildWeekChart(person, col, appState);
+    chartCard.innerHTML = `
+      <div class="card-header"><span class="icon">📈</span> Actividad de los últimos 7 días</div>
+      ${chartHtml}
+    `;
+    grid.appendChild(chartCard);
   }
+
+  /* ── Helpers ── */
+  _stressLabel(v) {
+    const labels = ['','😌 Muy bajo','🙂 Bajo','😐 Medio','😬 Alto','😰 Muy alto'];
+    return `${v} — ${labels[v]||v}`;
+  }
+
+  _energyLabel(v) {
+    const labels = ['','🪫 Agotado','😴 Bajo','🔋 Normal','⚡ Bueno','🚀 Excelente'];
+    return `${v} — ${labels[v]||v}`;
+  }
+
+  _renderStars(containerId, inputId, currentVal, color) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    if (!container || !input) return;
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'wellness-dot' + (i <= currentVal ? ' active' : '');
+      dot.dataset.val = i;
+      dot.style.setProperty('--dot-color', color);
+      dot.onclick = () => {
+        input.value = i;
+        container.querySelectorAll('.wellness-dot').forEach((d,idx) => {
+          d.classList.toggle('active', idx < i);
+        });
+      };
+      container.appendChild(dot);
+    }
+  }
+
+  _buildWeekChart(person, col, appState) {
+    const activities = appState?.activities || [];
+    const members = appState?.members || [];
+
+    // Build last-7-days buckets
+    const days = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      d.setHours(0,0,0,0);
+      const label = d.toLocaleDateString('es-ES', { weekday: 'short' });
+      days.push({ date: d, label, pasos: 0, sueno: 0, cals: 0 });
+    }
+
+    activities.forEach(act => {
+      const actDate = act.date?.toDate ? act.date.toDate() : new Date(act.date || act.createdAt);
+      actDate.setHours(0,0,0,0);
+
+      const member = members.find(m => m.id === act.uid);
+      if (!member) return;
+      const pKey = window.app?.getPersonKey(member.id, member.name, member.email);
+      if (pKey !== person) return;
+
+      const bucket = days.find(d => d.date.getTime() === actDate.getTime());
+      if (!bucket) return;
+      if (act.type === 'pasos') bucket.pasos += act.duration || 0;
+      if (act.type === 'sueño') bucket.sueno += act.duration || 0;
+      bucket.cals += act.calories || 0;
+    });
+
+    const maxPasos = Math.max(...days.map(d => d.pasos), 1000);
+    const w = 40, gap = 8, h = 100, total = days.length;
+    const svgW = total * (w + gap);
+
+    const bars = days.map((d, i) => {
+      const x = i * (w + gap);
+      const pct = Math.min(1, d.pasos / maxPasos);
+      const barH = Math.round(pct * (h - 20));
+      const y = h - barH;
+      const opacity = pct > 0 ? 0.9 : 0.15;
+      return `
+        <g>
+          <rect x="${x}" y="${y}" width="${w}" height="${barH}" rx="6"
+            fill="${col}" opacity="${opacity}"/>
+          ${d.pasos > 0 ? `<text x="${x + w/2}" y="${y - 4}" text-anchor="middle" font-size="9" fill="${col}" opacity="0.85">${d.pasos >= 1000 ? (d.pasos/1000).toFixed(1)+'k' : d.pasos}</text>` : ''}
+          <text x="${x + w/2}" y="${h + 14}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)">${d.label}</text>
+          ${d.sueno > 0 ? `<text x="${x + w/2}" y="${h + 26}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)">😴${d.sueno}h</text>` : ''}
+        </g>`;
+    }).join('');
+
+    return `
+      <div style="overflow-x:auto;padding:0.3rem 0 0.5rem;">
+        <svg viewBox="0 0 ${svgW} ${h + 32}" width="100%" style="min-width:${svgW}px;display:block;">
+          ${bars}
+        </svg>
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.3rem;">
+        <span style="font-size:0.75rem;color:var(--txt-3)">📊 Pasos 7d: <strong style="color:${col}">${days.reduce((s,d)=>s+d.pasos,0).toLocaleString()}</strong></span>
+        <span style="font-size:0.75rem;color:var(--txt-3)">🔥 Kcal 7d: <strong style="color:${col}">${days.reduce((s,d)=>s+d.cals,0).toLocaleString()}</strong></span>
+        <span style="font-size:0.75rem;color:var(--txt-3)">😴 Sueño 7d: <strong style="color:${col}">${days.reduce((s,d)=>s+d.sueno,0).toFixed(1)}h</strong></span>
+      </div>`;
+  }
+
+
 
   /* ── Celebration ── */
   checkCelebration() {

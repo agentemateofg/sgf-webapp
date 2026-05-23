@@ -1,0 +1,7 @@
+.DS_Store
+.firebase/
+*.bak
+Icon
+Thumbs.db
+node_modules/
+dist/

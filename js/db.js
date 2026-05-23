@@ -82,6 +82,42 @@ export class DB {
     });
   }
 
+  // Subscribe to daily wellness check-ins
+  subscribeWellness(callback) {
+    const fid = this.auth.familyId;
+    if (!fid) return () => {};
+    const q = query(this.wellnessRef(fid), orderBy('date', 'desc'));
+    return onSnapshot(q, snap => {
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      callback(items);
+    });
+  }
+
+  // Save/merge daily wellness check-in
+  async addWellness(data) {
+    const fid = this.auth.familyId;
+    if (!fid) throw new Error('Sin familia');
+    const user = this.auth.user;
+    
+    const targetUid = data.uid || user.uid;
+    const targetName = data.userName || user.displayName || user.email.split('@')[0];
+    
+    // Deterministic ID for daily check-in per user: YYYY-MM-DD_UID
+    const todayStr = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD format
+    const docId = `${todayStr}_${targetUid}`;
+    
+    return setDoc(doc(this.wellnessRef(fid), docId), {
+      uid: targetUid,
+      userName: targetName,
+      nivel_estres: parseInt(data.nivel_estres, 10),
+      nivel_energia: parseInt(data.nivel_energia, 10),
+      peso_kg: parseFloat(data.peso_kg) || null,
+      date: serverTimestamp(),
+      createdAt: serverTimestamp()
+    }, { merge: true });
+  }
+
   _genCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let out = '';

@@ -2,11 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── WHITELIST: Solo Mateo y Mónica ──
+    // ── WHITELIST: Solo Mateo y Mónica + Agente ──
     function isWhitelisted() {
       return request.auth != null && (
         request.auth.token.email == "mateo.ou@gmail.com" ||
-        request.auth.token.email == "1976Monicagc@dompavolei.com"
+        request.auth.token.email == "1976Monicagc@dompavolei.com" ||
+        request.auth.token.email == "agente.mateofg@gmail.com"
       );
     }
 

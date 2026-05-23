@@ -404,6 +404,37 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 @keyframes float      { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes glow       { 0%,100% { box-shadow: 0 0 10px rgba(105,240,174,0.12); } 50% { box-shadow: 0 0 20px rgba(105,240,174,0.28); } }
 
+/* ── Wellness Check-in Card ── */
+.wellness-row {
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.wellness-field {
+  flex: 1; display: flex; flex-direction: column; gap: 0.45rem;
+}
+.wellness-label {
+  font-size: 0.75rem; font-weight: 700; color: var(--txt-2);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.wellness-stars {
+  display: flex; gap: 0.35rem;
+}
+.wellness-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  cursor: pointer; transition: all 0.2s var(--ease);
+  flex-shrink: 0;
+}
+.wellness-dot:hover {
+  transform: scale(1.2);
+  border-color: var(--dot-color, var(--accent));
+}
+.wellness-dot.active {
+  background: var(--dot-color, var(--accent));
+  border-color: var(--dot-color, var(--accent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--dot-color, var(--accent)) 40%, transparent);
+}
+
 @media (max-width: 480px) {
   body { padding: 0 0.8rem 6.5rem; }
   .header-v2 .title-block h1 { font-size: 1.25rem; }
@@ -411,6 +442,7 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
   .card { padding: 1.1rem; border-radius: var(--radius-md); }
   .fab-v2 { width: 54px; height: 54px; font-size: 1.7rem; bottom: 18px; right: 18px; }
   .modal-box { padding: 1.1rem; }
+  .wellness-dot { width: 24px; height: 24px; }
 }
 </style>
 </head>
@@ -623,7 +655,7 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
     </div>
 
     <div class="form-row">
-      <label>Duración (min)</label>
+      <label id="lblDuration">Duración (min)</label>
       <div class="slider-wrap">
         <button class="slider-minus" onclick="window.app.sliderDelta(-5)">−</button>
         <input type="range" id="actDuration" min="0" max="120" step="5" value="30" oninput="window.app.sliderInput(this.value, 'min')">
@@ -632,7 +664,7 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
       <div class="value-display" id="valDuration">30 min</div>
     </div>
 
-    <div class="form-row">
+    <div class="form-row" id="rowCalories">
       <label>Calorías (~kcal)</label>
       <div class="slider-wrap">
         <button class="slider-minus" onclick="window.app.sliderDeltaCal(-10)">−</button>
@@ -686,6 +718,7 @@ const state = {
   familyId: null,
   activities: [],
   members: [],
+  wellness: [],
   presets: { duration: { step:5, min:0, max:120, val:30 }, calories: { step:10, min:0, max:800, val:150 } }
 };
 
@@ -699,6 +732,92 @@ window.app = {
   gamification: new Gamification(),
   legacyUI: new LegacyUI(),
   data: new LegacyData(),
+
+  /* ── Mapping Firestore members to local keys ── */
+  getPersonKey(uid, name, email) {
+    const n = (name || '').toLowerCase();
+    const e = (email || '').toLowerCase();
+    if (e === 'mateo.ou@gmail.com' || n.includes('mateo')) return 'mateo';
+    if (e === '1976monicagc@dompavolei.com' || (n.includes('mónica') || n.includes('monica')) && !n.includes('moni')) return 'monica';
+    if (n.includes('moni')) return 'moni';
+    return null;
+  },
+
+  /* ── Aggregate real-time data from Firestore + LocalDefaults ── */
+  getActiveData() {
+    const base = this.data.getAll();
+    if (!state.user || !state.familyId) return base;
+
+    const todayStr = new Date().toLocaleDateString('sv-SE');
+
+    // Reset daily values that are aggregated from Firestore
+    ['mateo', 'monica', 'moni'].forEach(p => {
+      base[p].pasos_diarios = 0;
+      base[p].sueno_horas = 0;
+    });
+
+    // Sum activities for today
+    if (state.activities && state.activities.length > 0) {
+      state.activities.forEach(act => {
+        const actDate = act.date?.toDate ? act.date.toDate() : new Date(act.date || act.createdAt);
+        const actDateStr = actDate.toLocaleDateString('sv-SE');
+        
+        if (actDateStr === todayStr) {
+          const member = state.members.find(m => m.id === act.uid);
+          if (member) {
+            const pKey = this.getPersonKey(member.id, member.name, member.email);
+            if (pKey) {
+              if (act.type === 'pasos') {
+                base[pKey].pasos_diarios += parseInt(act.duration, 10) || 0;
+              } else if (act.type === 'sueño') {
+                base[pKey].sueno_horas += parseFloat(act.duration) || 0;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Merge wellness check-ins for today
+    if (state.wellness && state.wellness.length > 0) {
+      state.wellness.forEach(w => {
+        const wDate = w.date?.toDate ? w.date.toDate() : new Date(w.date || w.createdAt);
+        const wDateStr = wDate.toLocaleDateString('sv-SE');
+
+        if (wDateStr === todayStr) {
+          const member = state.members.find(m => m.id === w.uid);
+          if (member) {
+            const pKey = this.getPersonKey(member.id, member.name, member.email);
+            if (pKey) {
+              if (w.nivel_estres !== undefined) base[pKey].nivel_estres = parseInt(w.nivel_estres, 10);
+              if (w.nivel_energia !== undefined) base[pKey].nivel_energia = parseInt(w.nivel_energia, 10);
+              if (w.peso_kg) base[pKey].peso_kg = parseFloat(w.peso_kg);
+            }
+          }
+        }
+      });
+    }
+
+    // Sum dinners for the current week (Sunday to Saturday)
+    let weekDinners = 0;
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday
+    startOfWeek.setHours(0,0,0,0);
+
+    if (state.activities) {
+      state.activities.forEach(act => {
+        const actDate = act.date?.toDate ? act.date.toDate() : new Date(act.date || act.createdAt);
+        if (actDate >= startOfWeek && (act.type === 'comida' && (act.notes || '').toLowerCase().includes('cena') || act.type === 'cena')) {
+          weekDinners++;
+        }
+      });
+    }
+    if (weekDinners > 0) {
+      base.familia.cenas_familia_juntas = weekDinners;
+    }
+
+    return base;
+  },
 
   /* ── Auth flow ── */
   onAuthChange(u) {
@@ -776,7 +895,7 @@ window.app = {
   /* ── Init main app ── */
   initApp() {
     this.legacyUI.renderTabs();
-    this.legacyUI.renderFamilia(this.data.getAll(), this.gamification);
+    this.renderAll();
     this.legacyUI.setupListeners(this);
     this.registerSW();
 
@@ -785,10 +904,30 @@ window.app = {
       this._unsubActs = db.subscribeActivities(items => {
         state.activities = items;
         this.renderFeed();
+        this.renderAll();
       });
       this._unsubMembers = db.subscribeMembers(items => {
         state.members = items;
+        this.renderAll();
       });
+      this._unsubWellness = db.subscribeWellness(items => {
+        state.wellness = items;
+        this.renderAll();
+      });
+    }
+  },
+
+  renderAll() {
+    const data = this.getActiveData();
+    this.legacyUI.renderFamilia(data, this.gamification);
+    
+    // Render current active personal panel
+    const activeTab = document.querySelector('.tab-v2.active');
+    if (activeTab) {
+      const p = activeTab.dataset.target;
+      if (['mateo','monica','moni'].includes(p)) {
+        this.legacyUI.renderPerson(p, data[p], this.gamification);
+      }
     }
   },
 
@@ -850,32 +989,145 @@ window.app = {
   /* ── Activity Modal (FAB) ── */
   openActivityModal() {
     document.getElementById('entryModal').classList.add('active');
-    // Default type: ejercicio
     document.querySelectorAll('#actTypeChips .chip').forEach(b=>b.classList.remove('active'));
     const def = document.querySelector('#actTypeChips .chip[data-type="ejercicio"]');
     if (def) def.classList.add('active');
+    this.updateActivityModalUI('ejercicio');
+  },
+
+  updateActivityModalUI(type) {
+    const lblDur = document.getElementById('lblDuration');
+    const rngDur = document.getElementById('actDuration');
+    const rowCal = document.getElementById('rowCalories');
+    const valDur = document.getElementById('valDuration');
+    
+    let min = 0, max = 120, step = 5, def = 30, unit = 'min';
+    let showCalories = true;
+    let calVal = 150;
+
+    if (type === 'pasos') {
+      lblDur.textContent = 'Pasos caminados';
+      min = 0; max = 20000; step = 100; def = 6000; unit = 'pasos';
+      showCalories = true;
+      calVal = 150;
+    } else if (type === 'sueño') {
+      lblDur.textContent = 'Horas de Sueño';
+      min = 0; max = 12; step = 0.5; def = 8; unit = 'h';
+      showCalories = false;
+    } else if (type === 'agua') {
+      lblDur.textContent = 'Cantidad de Agua';
+      min = 0; max = 3000; step = 100; def = 1500; unit = 'ml';
+      showCalories = false;
+    } else if (type === 'lectura') {
+      lblDur.textContent = 'Tiempo de Lectura';
+      min = 0; max = 180; step = 5; def = 30; unit = 'min';
+      showCalories = false;
+    } else if (type === 'meditacion') {
+      lblDur.textContent = 'Duración Meditación';
+      min = 0; max = 120; step = 5; def = 15; unit = 'min';
+      showCalories = false;
+    } else if (type === 'comida') {
+      lblDur.textContent = 'Comidas/Cenas';
+      min = 0; max = 5; step = 1; def = 3; unit = 'veces';
+      showCalories = false;
+    } else {
+      lblDur.textContent = 'Duración (min)';
+      min = 0; max = 180; step = 5; def = 45; unit = 'min';
+      showCalories = true;
+      calVal = 250;
+    }
+
+    rngDur.min = min;
+    rngDur.max = max;
+    rngDur.step = step;
+    rngDur.value = def;
+    
+    state.presets.duration = { min, max, step, val: def, unit };
+    valDur.textContent = def + ' ' + unit;
+
+    if (showCalories) {
+      rowCal.style.display = 'block';
+      const rngCal = document.getElementById('actCalories');
+      rngCal.value = calVal;
+      state.presets.calories.val = calVal;
+      document.getElementById('valCalories').textContent = calVal + ' kcal';
+    } else {
+      rowCal.style.display = 'none';
+    }
   },
 
   sliderInput(val, unit) {
-    const v = parseInt(val,10);
-    if (unit === 'min') { document.getElementById('valDuration').textContent = v + ' min'; state.presets.duration.val = v; }
-    if (unit === 'kcal') { document.getElementById('valCalories').textContent = v + ' kcal'; state.presets.calories.val = v; }
+    const v = parseFloat(val);
+    if (unit === 'min') {
+      const u = state.presets.duration.unit || 'min';
+      document.getElementById('valDuration').textContent = v + ' ' + u;
+      state.presets.duration.val = v;
+    }
+    if (unit === 'kcal') {
+      document.getElementById('valCalories').textContent = Math.round(v) + ' kcal';
+      state.presets.calories.val = Math.round(v);
+    }
   },
 
-  sliderDelta(d) { const p=state.presets.duration; let v=p.val+d; v=Math.max(p.min,Math.min(p.max,v)); document.getElementById('actDuration').value=v; this.sliderInput(v,'min'); },
-  sliderDeltaCal(d) { const p=state.presets.calories; let v=p.val+d; v=Math.max(p.min,Math.min(p.max,v)); document.getElementById('actCalories').value=v; this.sliderInput(v,'kcal'); },
+  sliderDelta(d) {
+    const p = state.presets.duration;
+    let v = p.val + d;
+    v = Math.max(p.min, Math.min(p.max, v));
+    if (p.step % 1 !== 0) v = parseFloat(v.toFixed(2));
+    document.getElementById('actDuration').value = v;
+    this.sliderInput(v, 'min');
+  },
+
+  sliderDeltaCal(d) {
+    const p = state.presets.calories;
+    let v = p.val + d;
+    v = Math.max(p.min, Math.min(p.max, v));
+    document.getElementById('actCalories').value = v;
+    this.sliderInput(v, 'kcal');
+  },
 
   async saveActivity() {
     const typeBtn = document.querySelector('#actTypeChips .chip.active');
     const type = typeBtn ? typeBtn.dataset.type : 'otro';
-    const duration = parseInt(document.getElementById('actDuration').value,10)||0;
-    const calories = parseInt(document.getElementById('actCalories').value,10)||0;
+    const duration = parseFloat(document.getElementById('actDuration').value)||0;
+    const rowCal = document.getElementById('rowCalories');
+    const calories = rowCal.style.display !== 'none' ? (parseInt(document.getElementById('actCalories').value,10)||0) : 0;
     const notes = document.getElementById('actNotes').value.trim();
     try {
       await db.addActivity({ type, duration, calories, notes });
       document.getElementById('entryModal').classList.remove('active');
       document.getElementById('actNotes').value = '';
     } catch(e) { alert('Error al guardar: ' + (e.message||e)); }
+  },
+
+  async saveWellnessCheckin(person) {
+    const estresEl = document.getElementById(`wEstres_${person}`);
+    const energiaEl = document.getElementById(`wEnergia_${person}`);
+    const pesoEl = document.getElementById(`wPeso_${person}`);
+    if (!estresEl || !energiaEl) return;
+
+    const nivel_estres = parseInt(estresEl.value, 10);
+    const nivel_energia = parseInt(energiaEl.value, 10);
+    const peso_kg = pesoEl ? parseFloat(pesoEl.value) || null : null;
+
+    // Map person key to member uid
+    const member = state.members.find(m => {
+      const key = this.getPersonKey(m.id, m.name, m.email);
+      return key === person;
+    });
+    const uid = member ? member.id : null;
+    const userName = member ? (member.name || person) : person;
+
+    try {
+      await db.addWellness({ nivel_estres, nivel_energia, peso_kg, uid, userName });
+      const btn = document.getElementById(`wSave_${person}`);
+      if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Guardado';
+        btn.style.background = 'rgba(105,240,174,0.2)';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+      }
+    } catch(e) { alert('Error al guardar bienestar: ' + (e.message||e)); }
   },
 
   /* ── Encrypted sync (legacy) ── */
@@ -949,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     b.addEventListener('click', () => {
       document.querySelectorAll('#actTypeChips .chip').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
+      app.updateActivityModalUI(b.dataset.type);
     });
   });
 
@@ -960,10 +1213,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       const panel = document.getElementById('panel-' + tab.dataset.target);
       if (panel) { panel.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
-      // Render legacy personal tab
+      // Render personal tab with live data
       const p = tab.dataset.target;
       if (['mateo','monica','moni'].includes(p)) {
-        app.legacyUI.renderPerson(p, app.data.getAll()[p], app.gamification);
+        app.legacyUI.renderPerson(p, app.getActiveData()[p], app.gamification);
       }
     });
   });
