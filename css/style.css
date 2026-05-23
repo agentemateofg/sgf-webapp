@@ -1,0 +1,237 @@
+/**
+ * SGFIntegral — Estilos Premium Glassmorphic
+ */
+
+:root {
+  --mateo:   #4fc3f7;
+  --monica:  #f48fb1;
+  --moni:    #ce93d8;
+  --familia: #69f0ae;
+  --bg:      #0b1020;
+  --glass:   rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+  --glass-hover: rgba(255,255,255,0.14);
+  --text:    #e2e8f0;
+  --text2:   #94a3b8;
+  --radius:  20px;
+  --shadow:  0 8px 32px rgba(0,0,0,0.35);
+  --shadow-lg: 0 25px 50px rgba(0,0,0,0.45);
+  --anim:    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(1200px 800px at -10% -10%, rgba(79,195,247,0.07) 0%, transparent 60%),
+    radial-gradient(900px 700px at 110% 10%, rgba(206,147,216,0.07) 0%, transparent 55%),
+    radial-gradient(800px 600px at 80% 100%, rgba(105,240,174,0.05) 0%, transparent 50%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding: 1.2rem 1rem 2rem; }
+
+/* ── Glass card base ── */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,3%);
+  transition: transform 0.5s var(--anim), box-shadow 0.5s var(--anim), border-color 0.4s ease;
+}
+.glass:hover, .glass:focus-within {
+  border-color: var(--glass-hover);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,5%);
+  transform: translateY(-3px) scale(1.003);
+}
+
+/* ── Header ── */
+.header {
+  max-width: 1400px; margin: 0 auto 1.6rem;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+  animation: revealDown 0.7s var(--anim) both;
+}
+.title-block h1 {
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em;
+  background: linear-gradient(90deg, var(--mateo), var(--moni), var(--familia));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.title-block p { color: var(--text2); font-size: 0.85rem; margin-top: 0.2rem; }
+.header-actions { display: flex; gap: 0.6rem; align-items: center; }
+.btn-sync {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%; width: 40px; height: 40px; font-size: 1.1rem;
+  cursor: pointer; color: var(--text); backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
+}
+.btn-sync:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+
+/* ── Sync panel ── */
+.sync-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(90vw, 380px); z-index: 200;
+  padding: 1.6rem; border-radius: 24px;
+}
+.sync-body { display: flex; flex-direction: column; gap: 1rem; }
+.pin-input-group label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; }
+.pin-input {
+  width: 100%; padding: 0.7rem 1rem; border-radius: 12px;
+  background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text); font-size: 1rem; text-align: center; letter-spacing: 0.3em;
+}
+.pin-input:focus { outline: none; border-color: var(--familia); }
+.sync-buttons { display: flex; gap: 0.6rem; }
+.sync-blob {
+  width: 100%; padding: 0.7rem; border-radius: 10px;
+  background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15);
+  color: var(--text2); font-family: monospace; font-size: 0.75rem; resize: none;
+}
+.sync-status { font-size: 0.8rem; text-align: center; min-height: 1.2rem; }
+.sync-status.success { color: var(--familia); }
+.sync-status.error   { color: #ef4444; }
+.btn-close-x {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--text2); font-size: 1.2rem; cursor: pointer;
+}
+
+/* ── Tabs ── */
+.tabs {
+  max-width: 1400px; margin: 0 auto 1.4rem;
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  animation: revealDown 0.6s 0.08s var(--anim) both;
+}
+.tab {
+  padding: 0.65rem 1.2rem; border-radius: 30px; cursor: pointer;
+  font-size: 0.85rem; font-weight: 600; user-select: none; color: var(--text2);
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px); transition: all 0.4s var(--anim);
+}
+.tab:hover { border-color: rgba(255,255,255,0.2); color: var(--text); transform: translateY(-2px); background: rgba(255,255,255,0.06); }
+.tab.active {
+  background: linear-gradient(135deg, rgba(105,240,174,0.18), rgba(45,212,191,0.12));
+  color: #c8ffe0; border-color: rgba(105,240,174,0.45);
+  box-shadow: 0 0 16px rgba(105,240,174,0.12);
+}
+
+/* ── Panels ── */
+.panel { display: none; max-width: 1400px; margin: 0 auto; }
+.panel.active { display: block; animation: revealUp 0.55s var(--anim) both; }
+
+/* ── Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.2rem;
+}
+@media (min-width: 1000px) {
+  .grid .hero { grid-column: span 2; }
+  .grid .full { grid-column: span 3; }
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .grid .hero, .grid .full { grid-column: span 1; }
+}
+
+/* ── Card ── */
+.card {
+  border-radius: var(--radius); padding: 1.4rem;
+  position: relative;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.card-header { display: flex; align-items: center; gap: 0.55rem; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #fff; }
+.card-header .icon { font-size: 1.4rem; filter: drop-shadow(0 0 4px rgba(255,255,255,0.15)); animation: float 4s ease-in-out infinite; }
+
+/* ── Streak ring ── */
+.streak-ring { position: relative; width: 110px; height: 110px; margin: 0 auto 1rem; }
+.streak-ring svg { transform: rotate(-90deg); width: 110px; height: 110px; filter: drop-shadow(0 0 8px rgba(105,240,174,0.3)); }
+.streak-ring circle { fill: none; stroke-width: 9; transition: stroke-dashoffset 1.2s var(--anim); }
+.streak-ring .track  { stroke: rgba(255,255,255,0.08); }
+.streak-ring .progress { stroke: var(--familia); stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(105,240,174,0.4)); }
+.streak-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.streak-text .days  { font-size: 1.8rem; font-weight: 800; color: var(--familia); text-shadow: 0 0 10px rgba(105,240,174,0.35); }
+.streak-text .label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; letter-spacing: 2px; }
+
+/* ── Points bar ── */
+.points-bar { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.5rem; }
+.points-track { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); }
+.points-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--familia), #2dd4bf); transition: width 1.2s var(--anim); position: relative; }
+.points-fill::after { content: ''; position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); background-size: 200%; animation: shine 2.5s linear infinite; }
+
+/* ── Habits / badges ── */
+.habits { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.8rem; }
+.habit {
+  display: flex; align-items: center; gap: 0.35rem;
+  padding: 0.45rem 0.85rem; border-radius: 24px; font-size: 0.8rem; font-weight: 500;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer; user-select: none; transition: all 0.35s var(--anim); color: var(--text2);
+}
+.habit:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
+.habit.done { border-color: rgba(105,240,174,0.4); background: rgba(105,240,174,0.08); color: #c8ffe0; box-shadow: 0 0 12px rgba(105,240,174,0.12); animation: glow 2.5s ease-in-out infinite; }
+.habit.done::before { content: '✓'; margin-right: 0.2rem; font-weight: 800; }
+
+/* ── Mini cards ── */
+.mini-cards { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.mini-card { flex: 1; min-width: 100px; background: rgba(0,0,0,0.18); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.06); transition: transform 0.4s var(--anim), box-shadow 0.4s; }
+.mini-card:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+.mini-card .avatar { font-size: 2rem; margin-bottom: 0.3rem; transition: transform 0.4s ease; }
+.mini-card:hover .avatar { transform: scale(1.15) rotate(-5deg); }
+.mini-card .name { font-size: 0.82rem; font-weight: 700; color: #fff; }
+.mini-card .pts { font-size: 0.75rem; color: var(--text2); margin-top: 0.15rem; }
+
+/* ── Team badge ── */
+.team-badge { display: flex; gap: 0.4rem; align-items: center; padding: 0.5rem 1rem; border-radius: 30px; font-size: 0.85rem; }
+.team-level { font-weight: 700; color: var(--familia); }
+
+/* ── Metric (personal) ── */
+.metric { margin-top: 0.8rem; }
+.metric-label { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
+.metric-bar-wrap { height: 9px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); }
+.metric-bar { height: 100%; border-radius: 10px; transition: width 1.2s var(--anim); position: relative; }
+.metric-bar::after { content: ''; position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); background-size: 200%; animation: shine 2.5s linear infinite; }
+
+/* ── Buttons ── */
+.btn {
+  padding: 0.7rem 1.2rem; border-radius: 24px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none;
+  transition: transform 0.3s var(--anim), box-shadow 0.3s ease; flex: 1;
+}
+.btn-primary { background: linear-gradient(135deg, var(--familia), #2dd4bf); color: #0b1020; box-shadow: 0 6px 18px rgba(105,240,174,0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(105,240,174,0.38); }
+.btn-secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.12); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-sm { padding: 0.45rem 0.7rem; border-radius: 14px; font-size: 0.75rem; }
+
+/* ── Celebration overlay ── */
+.celebration {
+  display: none; position: fixed; inset: 0; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.62); backdrop-filter: blur(6px); z-index: 100;
+}
+.celebration.active { display: flex; }
+.celebration-box {
+  padding: 2rem; text-align: center; max-width: 380px; width: 90%; border-radius: 24px;
+  background: rgba(15,20,35,0.78); backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(105,240,174,0.2); box-shadow: 0 24px 60px rgba(105,240,174,0.12);
+}
+.celebration-emoji { font-size: 3rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 10px rgba(105,240,174,0.3)); animation: float 3s ease-in-out infinite; }
+.celebration-box h2 { font-size: 1.5rem; color: var(--familia); margin-bottom: 0.5rem; }
+.celebration-box p { color: var(--text2); margin-bottom: 1.4rem; font-size: 0.9rem; }
+.btn-close { padding: 0.75rem 1.8rem; border-radius: 30px; font-weight: 700; border: none; background: linear-gradient(135deg, var(--familia), #2dd4bf); color: #0b1020; cursor: pointer; font-size: 1rem; box-shadow: 0 8px 22px rgba(105,240,174,0.25); transition: transform 0.3s var(--anim); }
+.btn-close:hover { transform: translateY(-3px) scale(1.03); }
+
+/* ── Entry modal (reusa .celebration) ── */
+
+/* ── Animaciones ── */
+@keyframes revealDown { from { opacity:0; transform: translateY(-14px); } to { opacity:1; transform: translateY(0); } }
+@keyframes revealUp   { from { opacity:0; transform: translateY(14px) scale(0.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes shine      { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes float      { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes glow       { 0%,100% { box-shadow: 0 0 10px rgba(105,240,174,0.12); } 50% { box-shadow: 0 0 20px rgba(105,240,174,0.28); } }
+@keyframes pulseHeart { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }

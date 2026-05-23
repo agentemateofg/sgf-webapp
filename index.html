@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SGFIntegral — Familia</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3e🌟%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Sync Panel (hidden by default, toggled) -->
+<div id="syncPanel" class="sync-panel glass" style="display:none;">
+  <div class="card-header"><span class="icon">🔒</span> Caja Fuerte Familiar</div>
+  <div class="sync-body">
+    <div class="pin-input-group">
+      <label>PIN de 6 dígitos</label>
+      <input type="password" id="pinInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••">
+    </div>
+    <div class="sync-buttons">
+      <button class="btn btn-primary" onclick="app.exportData()">📤 Exportar Sala</button>
+      <button class="btn btn-secondary" onclick="app.importData()">📥 Importar Sala</button>
+    </div>
+    <div id="syncStatus" class="sync-status"></div>
+    <textarea id="syncBlob" class="sync-blob" placeholder="Pega aquí el código de sala…" rows="3"></textarea>
+  </div>
+  <button class="btn-close-x" onclick="app.toggleSync(false)">✕</button>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="title-block">
+    <h1>🌟 SGFIntegral</h1>
+    <p>Familia en Modo Cooperativo</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-sync" onclick="app.toggleSync(true)" title="Caja Fuerte Familiar">🔒</button>
+    <div class="team-badge glass">
+      <span>👑</span>
+      <span class="team-level" id="teamLevel">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabs">
+  <div class="tab active" data-target="familia">🏠 Familia</div>
+  <div class="tab" data-target="mateo">👤 Mateo</div>
+  <div class="tab" data-target="monica">👤 Mónica</div>
+  <div class="tab" data-target="moni">🌟 Moni</div>
+</div>
+
+<!-- Panel Familia -->
+<div class="panel active" id="panel-familia">
+  <div class="grid">
+    <div class="card hero glass" style="border-color: rgba(105,240,174,0.3);">
+      <div class="card-header"><span class="icon">🔥</span> Rachas Familiares</div>
+      <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:space-around;align-items:center;">
+        <div class="streak-ring">
+          <svg><circle class="track" cx="55" cy="55" r="46"/><circle id="ringFam" class="progress" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/></svg>
+          <div class="streak-text"><div class="days" id="streakFam">0</div><div class="label">DÍAS JUNTOS</div></div>
+        </div>
+        <div>
+          <div style="font-size:0.88rem;color:var(--text2);margin-bottom:0.4rem;">Objetivo semanal</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--familia);text-shadow:0 0 12px rgba(105,240,174,0.3);">🎯 5 cenas familiares</div>
+          <div class="points-bar" style="margin-top:0.7rem;">
+            <div class="points-track"><div class="points-fill" id="barCenas" style="width:0%"></div></div>
+            <span id="txtCenas" style="font-size:0.82rem;color:var(--text2);font-weight:600;">0/5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass" style="border-color: rgba(251,191,36,0.35);">
+      <div class="card-header"><span class="icon">⚡</span> Reto del Día</div>
+      <div style="font-size:1.05rem;margin-bottom:0.9rem;">Hoy ganamos <strong style="color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,0.3);">+50 pts</strong> si:</div>
+      <div class="habits" id="dailyChallenge">
+        <div class="habit" data-done="false">🥗 Todo el mundo incluye una verdura</div>
+        <div class="habit" data-done="false">🚶‍♀️ Familia hace 2000 pasos juntos</div>
+        <div class="habit" data-done="false">😴 Acostarse antes de las 23:30</div>
+      </div>
+    </div>
+
+    <div class="card full glass" style="border-color: rgba(79,195,247,0.3);">
+      <div class="card-header"><span class="icon">📋</span> Tablero de Hábitos</div>
+      <div style="display:grid;grid-template-columns: repeat(auto-fill, minmax(140px,1fr));gap:0.7rem;" id="habitBoard"></div>
+    </div>
+
+    <div class="card glass" style="border-color: rgba(206,147,216,0.3);">
+      <div class="card-header"><span class="icon">🏆</span> Puntos esta Semana</div>
+      <div class="mini-cards" id="miniPoints">
+        <div class="mini-card"><div class="avatar">👨</div><div class="name">Mateo</div><div class="pts" id="ptsMateo">0</div></div>
+        <div class="mini-card"><div class="avatar">👩</div><div class="name">Mónica</div><div class="pts" id="ptsMonica">0</div></div>
+        <div class="mini-card"><div class="avatar">👧</div><div class="name">Moni</div><div class="pts" id="ptsMoni">0</div></div>
+      </div>
+      <div style="margin-top:1.2rem;font-size:0.85rem;color:var(--text2);">💡 Bonus de equipo: +20 pts cuando 2+ miembros cumplen el mismo hábito.</div>
+    </div>
+
+    <div class="card glass" style="border-color: rgba(239,68,68,0.35);">
+      <div class="card-header"><span class="icon">❤️</span> Vida del Equipo</div>
+      <div style="font-size:2.2rem;letter-spacing:0.15rem;" id="teamHearts">❤️❤️❤️❤️❤️</div>
+      <div style="margin-top:0.6rem;font-size:0.85rem;color:var(--text2);line-height:1.45;">Pierdes ❤️ si coméis fuera más de 3 veces por semana o sin ejercicio 3 días seguidos.</div>
+    </div>
+
+    <div class="card glass" style="border-color: rgba(167,139,250,0.3);">
+      <div class="card-header"><span class="icon">🎖️</span> Nivel Familiar</div>
+      <div style="display:flex;align-items:center;gap:1.2rem;">
+        <div style="font-size:3.2rem;filter:drop-shadow(0 0 10px rgba(167,139,250,0.3));animation: float 4s ease-in-out infinite;">🏅</div>
+        <div style="flex:1;">
+          <div style="font-size:1.35rem;font-weight:800;color:#c4b5fd;text-shadow:0 0 12px rgba(167,139,250,0.25);" id="levelName">—</div>
+          <div style="font-size:0.86rem;color:var(--text2);margin-top:0.25rem;" id="levelDesc">—</div>
+          <div class="points-bar" style="margin-top:0.7rem;">
+            <div class="points-track"><div class="points-fill" id="barLevel" style="width:0%;background:linear-gradient(90deg,#a78bfa,#818cf8);"></div></div>
+            <span id="txtLevel" style="font-size:0.8rem;color:var(--text2);white-space:nowrap;font-weight:600;">0/1000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel Mateo -->
+<div class="panel" id="panel-mateo"><div class="grid" id="grid-mateo"></div></div>
+<div class="panel" id="panel-monica"><div class="grid" id="grid-monica"></div></div>
+<div class="panel" id="panel-moni"><div class="grid" id="grid-moni"></div></div>
+
+<!-- Celebration Overlay -->
+<div class="celebration" id="celebration">
+  <div class="celebration-box">
+    <div class="celebration-emoji">🎉</div>
+    <h2 id="celTitle">¡Objetivo alcanzado!</h2>
+    <p id="celMsg">La familia ha completado el reto.</p>
+    <button class="btn-close" onclick="document.getElementById('celebration').classList.remove('active')">¡Genial!</button>
+  </div>
+</div>
+
+<!-- Data entry prompt (simple inline) -->
+<div id="entryModal" class="celebration">
+  <div class="celebration-box" style="max-width:340px;">
+    <h2 id="entryTitle" style="font-size:1.2rem;color:var(--familia);margin-bottom:0.8rem;">Registrar dato</h2>
+    <div id="entryBody"></div>
+    <div style="display:flex;gap:0.6rem;margin-top:1.2rem;">
+      <button class="btn btn-primary" onclick="app.saveEntry()">Guardar</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('entryModal').classList.remove('active')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { Storage } from './js/storage.js';
+import { Gamification } from './js/gamification.js';
+import { UI } from './js/ui.js';
+import { Data } from './js/data.js';
+
+window.app = {
+  storage: new Storage(),
+  gamification: new Gamification(),
+  ui: new UI(),
+  data: new Data(),
+
+  init() {
+    this.ui.renderTabs();
+    this.ui.renderFamilia(this.data.getAll(), this.gamification);
+    this.ui.setupListeners(this);
+    this.registerSW();
+  },
+
+  exportData() {
+    const pin = document.getElementById('pinInput').value;
+    if (!/^\d{6}$/.test(pin)) { this.setSyncStatus('PIN debe ser 6 dígitos', 'error'); return; }
+    const blob = this.storage.exportEncrypted(pin);
+    document.getElementById('syncBlob').value = blob;
+    this.setSyncStatus('Copia el texto y envíalo', 'success');
+  },
+
+  importData() {
+    const pin = document.getElementById('pinInput').value;
+    if (!/^\d{6}$/.test(pin)) { this.setSyncStatus('PIN debe ser 6 dígitos', 'error'); return; }
+    const blob = document.getElementById('syncBlob').value.trim();
+    if (!blob) { this.setSyncStatus('Pega el código de sala primero', 'error'); return; }
+    try {
+      this.storage.importEncrypted(pin, blob);
+      this.setSyncStatus('¡Datos sincronizados! Recarga…', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } catch(e) { this.setSyncStatus(e.message || 'PIN incorrecto o código corrupto', 'error'); }
+  },
+
+  toggleSync(show) {
+    document.getElementById('syncPanel').style.display = show ? 'block' : 'none';
+  },
+
+  setSyncStatus(msg, type) {
+    const el = document.getElementById('syncStatus');
+    el.textContent = msg;
+    el.className = 'sync-status ' + type;
+  },
+
+  saveEntry() {
+    const key = document.getElementById('entryKey').value;
+    const val = document.getElementById('entryVal').value;
+    const person = document.getElementById('entryPerson').value;
+    this.data.set(person, key, parseFloat(val));
+    this.storage.save(this.data.getAll());
+    document.getElementById('entryModal').classList.remove('active');
+    this.ui.renderFamilia(this.data.getAll(), this.gamification);
+    ['mateo','monica','moni'].forEach(p => this.ui.renderPerson(p, this.data.getAll()[p], this.gamification));
+  },
+
+  async registerSW() {
+    if ('serviceWorker' in navigator) {
+      try { await navigator.serviceWorker.register('sw.js'); } catch(e) {}
+    }
+  }
+};
+
+app.init();
+</script>
+</body>
+</html>
