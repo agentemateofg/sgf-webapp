@@ -546,19 +546,19 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
   </div>
   
   <div class="identity-container">
-    <div class="identity-card" style="--card-accent: var(--mateo); --card-glow: rgba(79, 195, 247, 0.15); --card-shadow: rgba(79, 195, 247, 0.2);" onclick="app.loginAs('mateo')">
+    <div class="identity-card" style="--card-accent: var(--mateo); --card-glow: rgba(79, 195, 247, 0.15); --card-shadow: rgba(79, 195, 247, 0.2);" onclick="window.app.loginAs('mateo')">
       <div class="avatar-icon">👤</div>
       <div class="name">Mateo</div>
       <div class="subtitle">Administrador</div>
     </div>
-    <div class="identity-card" style="--card-accent: var(--monica); --card-glow: rgba(244, 143, 177, 0.15); --card-shadow: rgba(244, 143, 177, 0.2);" onclick="app.loginAs('monica')">
+    <div class="identity-card" style="--card-accent: var(--monica); --card-glow: rgba(244, 143, 177, 0.15); --card-shadow: rgba(244, 143, 177, 0.2);" onclick="window.app.loginAs('monica')">
       <div class="avatar-icon">👩</div>
       <div class="name">Mónica</div>
       <div class="subtitle">Miembro</div>
     </div>
   </div>
 
-  <a href="#" id="btnGoogleFallback" class="google-fallback-link" onclick="app.googleLogin(); return false;">
+  <a href="#" id="btnGoogleFallback" class="google-fallback-link" onclick="window.app.googleLogin(); return false;">
     🔑 O iniciar sesión con cuenta de Google
   </a>
 
@@ -982,7 +982,9 @@ window.app = {
     });
 
     try {
-      await auth.loginWithEmail(email, password);
+      console.log('Iniciando sesión silenciosa para:', email);
+      await this.auth.loginWithEmail(email, password);
+      console.log('Sesión iniciada con éxito!');
       // Automatically redirect to the corresponding profile tab
       setTimeout(() => {
         const targetTab = profile === 'mateo' ? 'mateo' : 'monica';
@@ -994,6 +996,7 @@ window.app = {
         }
       }, 300);
     } catch(e) {
+      console.error('Error de autenticación:', e);
       alert('Error de conexión: ' + (e.message || e));
       cards.forEach(c => {
         c.style.transform = '';
