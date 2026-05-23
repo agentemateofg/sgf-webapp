@@ -46,7 +46,7 @@ export class Storage {
     if (!/^\d{6}$/.test(pin)) throw new Error('PIN 6 dígitos');
     const data = this.load();
     const hash = this._hash(pin + 'sgf-salt').slice(0, 8);
-    const payload = hash + JSON.stringify(data);
+    const payload = hash + encodeURIComponent(JSON.stringify(data));
     const key = this._expandKey(pin, payload.length);
     const ct = this._xor(payload, key);
     return btoa(ct);
@@ -62,10 +62,16 @@ export class Storage {
     const key = this._expandKey(pin, xored.length);
     const payload = this._xor(xored, key);
     const hash = payload.slice(0, 8);
-    const json = payload.slice(8);
+    const encodedJson = payload.slice(8);
     const expected = this._hash(pin + 'sgf-salt').slice(0, 8);
     if (hash !== expected) throw new Error('PIN incorrecto');
 
+    let json;
+    try {
+      json = decodeURIComponent(encodedJson);
+    } catch {
+      json = encodedJson; // Fallback if data was stored in unencoded legacy format
+    }
     const data = JSON.parse(json);
     this.save(data);
     return data;

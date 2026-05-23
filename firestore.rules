@@ -19,8 +19,7 @@ service cloud.firestore {
 
     // ── Families ──
     match /families/{familyId} {
-      allow create: if isWhitelisted();
-      allow read: if isWhitelisted() && isMember(familyId);
+      allow create, read: if isWhitelisted();
     }
 
     // ── Members ──

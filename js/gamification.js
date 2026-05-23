@@ -18,17 +18,23 @@ export class Gamification {
     if (!m) return 0;
     let pts = 0;
     // Pasos
-    if (m.pasos_diarios >= m.pasos_objetivo_diario) pts += 30;
-    else pts += Math.floor(30 * (m.pasos_diarios / m.pasos_objetivo_diario));
+    const targetSteps = parseInt(m.pasos_objetivo_diario, 10) || 8000;
+    const currentSteps = parseInt(m.pasos_diarios, 10) || 0;
+    if (currentSteps >= targetSteps) pts += 30;
+    else pts += Math.floor(30 * (currentSteps / targetSteps));
     // Sueño
-    if (m.sueno_horas >= m.sueno_objetivo_horas) pts += 25;
-    else pts += Math.floor(25 * Math.max(0, m.sueno_horas / m.sueno_objetivo_horas));
+    const targetSleep = parseFloat(m.sueno_objetivo_horas) || 8;
+    const currentSleep = parseFloat(m.sueno_horas) || 0;
+    if (currentSleep >= targetSleep) pts += 25;
+    else pts += Math.floor(25 * Math.max(0, currentSleep / targetSleep));
     // Estrés (bajo = bueno)
-    if (m.nivel_estres <= 3) pts += 20;
-    else if (m.nivel_estres <= 4) pts += 10;
+    const stress = parseInt(m.nivel_estres, 10);
+    if (stress <= 3) pts += 20;
+    else if (stress <= 4) pts += 10;
     // Energía (alto = bueno)
-    if (m.nivel_energia >= 4) pts += 25;
-    else if (m.nivel_energia >= 3) pts += 15;
+    const energy = parseInt(m.nivel_energia, 10);
+    if (energy >= 4) pts += 25;
+    else if (energy >= 3) pts += 15;
     return pts;
   }
 

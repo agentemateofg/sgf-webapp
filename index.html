@@ -929,6 +929,13 @@ window.app = {
     const userName = document.getElementById('userName');
 
     if (!u) {
+      if (this._unsubActs) { this._unsubActs(); this._unsubActs = null; }
+      if (this._unsubMembers) { this._unsubMembers(); this._unsubMembers = null; }
+      if (this._unsubWellness) { this._unsubWellness(); this._unsubWellness = null; }
+      state.familyId = null;
+      state.activities = [];
+      state.members = [];
+      state.wellness = [];
       this.showScreen('screen-login');
       userPill.style.display = 'none';
       return;
@@ -1234,7 +1241,7 @@ window.app = {
     const calories = rowCal.style.display !== 'none' ? (parseInt(document.getElementById('actCalories').value,10)||0) : 0;
     const notes = document.getElementById('actNotes').value.trim();
     try {
-      await db.addActivity({ type, duration, calories, notes });
+      await this.db.addActivity({ type, duration, calories, notes });
       document.getElementById('entryModal').classList.remove('active');
       document.getElementById('actNotes').value = '';
     } catch(e) { alert('Error al guardar: ' + (e.message||e)); }
@@ -1259,7 +1266,7 @@ window.app = {
     const userName = member ? (member.name || person) : person;
 
     try {
-      await db.addWellness({ nivel_estres, nivel_energia, peso_kg, uid, userName });
+      await this.db.addWellness({ nivel_estres, nivel_energia, peso_kg, uid, userName });
       const btn = document.getElementById(`wSave_${person}`);
       if (btn) {
         const orig = btn.textContent;
