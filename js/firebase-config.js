@@ -1,10 +1,9 @@
-// Auto-generated Firebase config
+// Auto-generated Firebase config — Familia-M
 export const firebaseConfig = {
-  "apiKey": "AIzaSyAdNvawtAucOHRXMYvgaShceHWaeqKzNOk",
-  "authDomain": "prueba-1764b.firebaseapp.com",
-  "projectId": "prueba-1764b",
-  "storageBucket": "prueba-1764b.firebasestorage.app",
-  "messagingSenderId": "1063034577906",
-  "appId": "1:1063034577906:web:1cbd05104ade7dc0dcc16b",
-  "measurementId": null
+  "projectId": "familia-m",
+  "appId": "1:614608820004:web:4116c13ef1086ed88305b1",
+  "storageBucket": "familia-m.firebasestorage.app",
+  "apiKey": "***",
+  "authDomain": "familia-m.firebaseapp.com",
+  "messagingSenderId": "614608820004"
 };
