@@ -139,10 +139,15 @@
 </div>
 
 <!-- Data entry prompt (simple inline) -->
+<!-- Quick Log FAB (floating) -->
+<button class="fab" id="fabLog" onclick="app.ui.openQuickLog()" title="Registrar rápido">＋</button>
+
+<!-- Slider Entry Modal -->
 <div id="entryModal" class="celebration">
-  <div class="celebration-box" style="max-width:340px;">
-    <h2 id="entryTitle" style="font-size:1.2rem;color:var(--familia);margin-bottom:0.8rem;">Registrar dato</h2>
+  <div class="celebration-box" style="max-width:380px;">
+    <h2 id="entryTitle" style="font-size:1.1rem;color:var(--familia);margin-bottom:0.6rem;font-weight:800;">Registrar dato</h2>
     <div id="entryBody"></div>
+    <div class="entry-value-display" id="entryValueDisplay">—</div>
     <div style="display:flex;gap:0.6rem;margin-top:1.2rem;">
       <button class="btn btn-primary" onclick="app.saveEntry()">Guardar</button>
       <button class="btn btn-secondary" onclick="document.getElementById('entryModal').classList.remove('active')">Cancelar</button>
