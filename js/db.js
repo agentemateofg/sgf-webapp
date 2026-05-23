@@ -1,0 +1,91 @@
+// Firestore CRUD + reactive subscriptions
+import { db } from './firebase.js';
+import {
+  collection, doc, addDoc, getDoc, setDoc, getDocs,
+  query, where, orderBy, onSnapshot, serverTimestamp,
+  writeBatch, updateDoc, deleteDoc
+} from 'https://esm.sh/firebase@10.12.0/firestore';
+
+export class DB {
+  constructor(auth) { this.auth = auth; }
+
+  familyRef(id)   { return doc(db, 'families', id); }
+  membersRef(id)  { return collection(db, 'families', id, 'members'); }
+  actsRef(id)     { return collection(db, 'families', id, 'activities'); }
+  wellnessRef(id) { return collection(db, 'families', id, 'wellness'); }
+
+  // Create new family
+  async createFamily(name, creator) {
+    const code = this._genCode();
+    const batch = writeBatch(db);
+    const famDoc = this.familyRef(code);
+    batch.set(famDoc, { name, createdAt: serverTimestamp(), createdBy: creator.uid });
+    batch.set(doc(this.membersRef(code), creator.uid), {
+      name: creator.displayName || creator.email.split('@')[0],
+      photo: creator.photoURL || '',
+      role: 'admin',
+      joinedAt: serverTimestamp()
+    });
+    await batch.commit();
+    return code;
+  }
+
+  // Join existing family (anyone with code can join)
+  async joinFamily(code, user) {
+    const snap = await getDoc(this.familyRef(code));
+    if (!snap.exists()) throw new Error('Código de familia no encontrado');
+    await setDoc(doc(this.membersRef(code), user.uid), {
+      name: user.displayName || user.email.split('@')[0],
+      photo: user.photoURL || '',
+      role: 'member',
+      joinedAt: serverTimestamp()
+    });
+    return code;
+  }
+
+  // Add activity
+  async addActivity(data) {
+    const fid = this.auth.familyId;
+    if (!fid) throw new Error('Sin familia');
+    const user = this.auth.user;
+    return addDoc(this.actsRef(fid), {
+      uid: user.uid,
+      userName: user.displayName || user.email.split('@')[0],
+      type: data.type,
+      duration: data.duration,
+      calories: data.calories || 0,
+      notes: data.notes || '',
+      date: serverTimestamp(),
+      createdAt: serverTimestamp()
+    });
+  }
+
+  // Subscribe to activities (real-time)
+  subscribeActivities(callback) {
+    const fid = this.auth.familyId;
+    if (!fid) return () => {};
+    const q = query(this.actsRef(fid), orderBy('date', 'desc'));
+    return onSnapshot(q, snap => {
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      callback(items);
+    });
+  }
+
+  subscribeMembers(callback) {
+    const fid = this.auth.familyId;
+    if (!fid) return () => {};
+    return onSnapshot(this.membersRef(fid), snap => {
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      callback(items);
+    });
+  }
+
+  _genCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let out = '';
+    for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+}

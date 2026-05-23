@@ -9,126 +9,652 @@
 <title>SGFIntegral — Familia</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3e🌟%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* ── SGFIntegral v2 — Apple-UI Dark Slate Overrides ── */
+:root {
+  --bg-deep: #060a14;
+  --bg-1: #0b1020;
+  --bg-2: #0f172a;
+  --glass-1: rgba(255,255,255,0.04);
+  --glass-2: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.06);
+  --glass-border-hi: rgba(255,255,255,0.14);
+  --accent: #69f0ae;
+  --accent-2: #34d399;
+  --accent-glow: rgba(105,240,174,0.18);
+  --danger: #f87171;
+  --warn: #fbbf24;
+  --info: #60a5fa;
+  --txt: #e2e8f0;
+  --txt-2: #94a3b8;
+  --txt-3: #64748b;
+  --radius-xl: 24px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.35);
+  --shadow-lg: 0 24px 60px rgba(0,0,0,0.45);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(1400px 900px at -8% -8%, rgba(79,195,247,0.06) 0%, transparent 55%),
+    radial-gradient(1100px 800px at 110% 5%, rgba(206,147,216,0.06) 0%, transparent 50%),
+    radial-gradient(900px 700px at 80% 105%, rgba(105,240,174,0.04) 0%, transparent 45%),
+    var(--bg-deep);
+  background-attachment: fixed;
+  color: var(--txt);
+  min-height: 100vh;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding: 0 1rem 7rem; }
+
+/* ── Screens ── */
+.screen { display:none; }
+.screen.active { display:block; animation: revealUp 0.55s var(--ease) both; }
+
+/* ── Glass base ── */
+.glass {
+  background: var(--glass-1);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.35s ease;
+}
+.glass:hover, .glass:focus-within {
+  border-color: var(--glass-border-hi);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.05);
+  transform: translateY(-2px) scale(1.005);
+}
+
+/* ── Login / Onboarding screens ── */
+.login-wrap {
+  min-height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 2rem 1.2rem; gap: 1.8rem; text-align:center;
+}
+.login-hero {
+  width: 120px; height: 120px; border-radius: 34px;
+  background: linear-gradient(135deg, rgba(105,240,174,0.25), rgba(45,212,191,0.15));
+  border: 1px solid rgba(105,240,174,0.25);
+  box-shadow: 0 16px 48px rgba(105,240,174,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
+  display:flex; align-items:center; justify-content:center; font-size: 3.2rem;
+  animation: float 4s ease-in-out infinite;
+}
+.login-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+.login-sub { color: var(--txt-2); font-size: 0.92rem; max-width: 280px; line-height: 1.5; }
+
+.btn-google {
+  display:flex; align-items:center; justify-content:center; gap: 0.6rem;
+  width: 100%; max-width: 320px; padding: 0.9rem 1rem; border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--txt); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  backdrop-filter: blur(8px); transition: all 0.3s ease;
+}
+.btn-google:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
+.btn-google .gicon { width:20px; height:20px; }
+
+/* Onboarding */
+.ob-card { width: 100%; max-width: 420px; padding: 1.6rem; border-radius: var(--radius-xl); text-align:left; }
+.ob-card h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.3rem; }
+.ob-card p { color: var(--txt-2); font-size: 0.88rem; margin-bottom: 1.2rem; }
+
+.input-glass {
+  width: 100%; padding: 0.8rem 1rem; border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--txt); font-family: inherit; font-size: 0.95rem; outline:none;
+  transition: border-color 0.25s ease;
+}
+.input-glass:focus { border-color: var(--accent); }
+.input-glass::placeholder { color: var(--txt-3); }
+
+.btn-primary-wide {
+  width: 100%; padding: 0.85rem; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0b1020; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(105,240,174,0.25); transition: transform 0.25s var(--ease), box-shadow 0.25s ease;
+}
+.btn-primary-wide:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(105,240,174,0.35); }
+
+.btn-secondary-wide {
+  width: 100%; padding: 0.75rem; border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04); color: var(--txt-2);
+  border: 1px solid rgba(255,255,255,0.1); font-weight: 600; font-size: 0.9rem; cursor: pointer;
+  transition: all 0.25s ease;
+}
+.btn-secondary-wide:hover { background: rgba(255,255,255,0.08); color: var(--txt); }
+
+/* Divider */
+.divider { display:flex; align-items:center; gap: 0.8rem; color: var(--txt-3); font-size: 0.8rem; margin-bottom:1rem; }
+.divider::before, .divider::after { content:''; flex:1; height:1px; background: rgba(255,255,255,0.08); }
+
+/* User avatar pill */
+.user-pill {
+  display:flex; align-items:center; gap: 0.5rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.35rem; border-radius: 40px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.82rem; font-weight: 600; color: var(--txt);
+}
+.user-pill img { width: 28px; height: 28px; border-radius: 50%; object-fit:cover; border: 1px solid rgba(255,255,255,0.1); }
+
+/* ── Header v2 ── */
+.header-v2 {
+  max-width: 1400px; margin: 0 auto 1.2rem; padding-top: 1.2rem;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 0.7rem;
+  animation: revealDown 0.6s var(--ease) both;
+}
+.header-v2 .title-block h1 {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;
+  background: linear-gradient(90deg, #4fc3f7, #ce93d8, #69f0ae);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-v2 .title-block p { color: var(--txt-2); font-size: 0.82rem; margin-top: 0.15rem; }
+
+/* ── Tabs ── */
+.tabs-v2 {
+  max-width: 1400px; margin: 0 auto 1.2rem;
+  display:flex; gap: 0.45rem; flex-wrap: wrap; overflow-x:auto; padding-bottom:0.3rem;
+  animation: revealDown 0.55s 0.06s var(--ease) both;
+  scrollbar-width: none;
+}
+.tabs-v2::-webkit-scrollbar { display:none; }
+.tab-v2 {
+  flex: 1; min-width: 72px; padding: 0.55rem 0.9rem; border-radius: 30px; cursor: pointer;
+  font-size: 0.82rem; font-weight: 600; user-select: none; color: var(--txt-2); text-align:center;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px); transition: all 0.35s var(--ease); white-space:nowrap;
+}
+.tab-v2:hover { border-color: rgba(255,255,255,0.18); color: var(--txt); transform: translateY(-2px); background: rgba(255,255,255,0.06); }
+.tab-v2.active {
+  background: linear-gradient(135deg, rgba(105,240,174,0.18), rgba(45,212,191,0.12));
+  color: #c8ffe0; border-color: rgba(105,240,174,0.45);
+  box-shadow: 0 0 14px rgba(105,240,174,0.12);
+}
+
+/* ── Panels ── */
+.panel { display: none; max-width: 1400px; margin: 0 auto; }
+.panel.active { display: block; animation: revealUp 0.5s var(--ease) both; }
+
+/* ── Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.1rem;
+}
+@media (min-width: 1000px) {
+  .grid .hero { grid-column: span 2; }
+  .grid .full { grid-column: span 3; }
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .grid .hero, .grid .full { grid-column: span 1; }
+}
+
+/* ── Card ── */
+.card {
+  border-radius: var(--radius-lg); padding: 1.3rem;
+  position: relative;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.card-header { display: flex; align-items: center; gap: 0.5rem; font-size: clamp(0rem, 4vw, 1rem); font-weight: 700; margin-bottom: 0.9rem; color: #fff; }
+.card-header .icon { font-size: clamp(0rem, 5vw, 1.4rem); filter: drop-shadow(0 0 4px rgba(255,255,255,0.15)); animation: float 4s ease-in-out infinite; }
+
+/* ── Activity Feed ── */
+.feed-list { display:flex; flex-direction:column; gap: 0.6rem; margin-top: 0.4rem; max-height: 340px; overflow-y:auto; padding-right: 0.3rem; }
+.feed-list::-webkit-scrollbar { width: 4px; }
+.feed-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+.feed-item {
+  display:flex; align-items:flex-start; gap: 0.7rem; padding: 0.65rem 0.8rem; border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.25s ease;
+}
+.feed-item:hover { background: rgba(255,255,255,0.06); }
+.feed-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit:cover; border: 1px solid rgba(255,255,255,0.1); flex-shrink:0; background: rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.feed-body { flex:1; min-width:0; }
+.feed-top { display:flex; justify-content:space-between; align-items:center; gap: 0.4rem; flex-wrap:wrap; }
+.feed-name { font-weight: 700; font-size: 0.88rem; color: #fff; }
+.feed-time { font-size: 0.75rem; color: var(--txt-3); white-space:nowrap; }
+.feed-text { font-size: 0.85rem; color: var(--txt-2); margin-top: 0.15rem; line-height: 1.4; }
+.feed-badge {
+  display:inline-flex; align-items:center; gap: 0.25rem;
+  padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  background: rgba(105,240,174,0.1); color: var(--accent); border: 1px solid rgba(105,240,174,0.2);
+  margin-top: 0.3rem;
+}
+
+/* ── FAB v2 ── */
+.fab-v2 {
+  position: fixed; bottom: 22px; right: 22px; z-index: 90;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0b1020; font-size: 1.9rem; font-weight: 300; border: none;
+  box-shadow: 0 8px 26px rgba(105,240,174,0.32), 0 0 0 1px rgba(105,240,174,0.25);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s ease;
+}
+.fab-v2:active { transform: scale(0.92); }
+.fab-v2:hover  { transform: scale(1.08); box-shadow: 0 12px 36px rgba(105,240,174,0.45); }
+
+/* ── Modal (reentry / activity log) ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index: 100;
+}
+.modal-overlay.active { display: flex; animation: fadeIn 0.25s ease both; }
+.modal-box {
+  width: min(92vw, 420px); max-height: 85vh; overflow-y:auto;
+  padding: 1.4rem; border-radius: var(--radius-xl);
+  background: rgba(15,20,35,0.82); backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(105,240,174,0.18); box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+  animation: modalUp 0.35s var(--ease) both;
+}
+.modal-close {
+  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--txt-2); font-size: 1.1rem; cursor: pointer; display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s ease;
+}
+.modal-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.modal-title { font-size: 1.05rem; font-weight: 800; color: var(--accent); margin-bottom: 0.9rem; text-align:center; }
+
+/* Form fields inside modal */
+.form-row { margin-bottom: 0.85rem; }
+.form-row label { display:block; font-size: 0.78rem; color: var(--txt-2); margin-bottom: 0.3rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.chip-row { display:flex; flex-wrap:wrap; gap: 0.45rem; margin-bottom: 0.8rem; }
+.chip {
+  padding: 0.45rem 0.8rem; border-radius: 22px; font-size: 0.82rem; font-weight: 600;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--txt-2); cursor: pointer; transition: all 0.2s ease; user-select:none;
+}
+.chip:hover, .chip.active {
+  background: rgba(105,240,174,0.12); border-color: rgba(105,240,174,0.4); color: #c8ffe0;
+  box-shadow: 0 0 10px rgba(105,240,174,0.08);
+}
+
+/* Slider group */
+.slider-wrap { display:flex; align-items:center; gap: 0.7rem; margin: 0.4rem 0; }
+input[type=range] { flex:1; -webkit-appearance:none; appearance:none; height: 8px; background: rgba(255,255,255,0.08); border-radius: 10px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 2px 10px rgba(105,240,174,0.4); cursor: pointer; border: 2px solid #0b1020; }
+input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 2px 10px rgba(105,240,174,0.4); cursor: pointer; border: 2px solid #0b1020; }
+
+.slider-minus, .slider-plus { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--txt); font-size: 1.1rem; cursor: pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.slider-minus:active, .slider-plus:active { background: rgba(255,255,255,0.14); transform: scale(0.9); }
+
+.value-display { text-align:center; font-size: 1.3rem; font-weight: 800; color: var(--accent); margin: 0.3rem 0 0.1rem; text-shadow: 0 0 12px rgba(105,240,174,0.2); }
+
+/* ── Sync Panel ── */
+.sync-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(92vw, 380px); z-index: 200; padding: 1.4rem; border-radius: var(--radius-xl);
+  display:none;
+}
+.sync-panel.show { display:block; animation: fadeIn 0.25s ease both; }
+.sync-body { display:flex; flex-direction:column; gap: 0.9rem; }
+.sync-status { font-size: 0.82rem; text-align:center; min-height: 1.2rem; }
+.sync-status.success { color: var(--accent); }
+.sync-status.error   { color: var(--danger); }
+.sync-blob {
+  width: 100%; padding: 0.7rem; border-radius: 10px;
+  background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15);
+  color: var(--txt-2); font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.75rem; resize:none;
+}
+.btn-close-x {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--txt-2); font-size: 1.2rem; cursor: pointer;
+}
+
+/* ── Celebration overlay ── */
+.celebration {
+  display: none; position: fixed; inset: 0; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.62); backdrop-filter: blur(6px); z-index: 100;
+}
+.celebration.active { display: flex; animation: fadeIn 0.25s ease both; }
+.celebration-box {
+  padding: 2rem; text-align: center; max-width: 380px; width: 90%; border-radius: var(--radius-xl);
+  background: rgba(15,20,35,0.78); backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(105,240,174,0.2); box-shadow: 0 24px 60px rgba(105,240,174,0.12);
+  animation: modalUp 0.3s var(--ease) both;
+}
+.celebration-emoji { font-size: 3rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 10px rgba(105,240,174,0.3)); animation: float 3s ease-in-out infinite; }
+.celebration-box h2 { font-size: 1.4rem; color: var(--accent); cursor:pointer; }
+.celebration-box p { color: var(--txt-2); margin-bottom: 1.4rem; font-size: 0.9rem; }
+.btn-close { padding: 0.75rem 1.8rem; border-radius: 30px; font-weight: 700; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b1020; cursor: pointer; font-size: 1rem; box-shadow: 0 8px 22px rgba(105,240,174,0.25); transition: transform 0.3s var(--ease); }
+.btn-close:hover { transform: translateY(-3px) scale(1.03); }
+
+/* ── Existing overrides (compat) ── */
+.header { display:none; }
+.header-v2 { display:flex; }
+.tabs { display:none !important; }
+#tabs { display:none !important; }
+
+/* Points bar (legacy) compat */
+.points-bar { display:flex; align-items:center; gap: 0.8rem; margin-top: 0.5rem; }
+.points-track { flex:1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); }
+.points-fill { height:100%; border-radius:10px; background: linear-gradient(90deg, var(--accent), #34d399); transition: width 1.2s var(--ease); position:relative; }
+.points-fill::after { content:''; position:absolute; inset:0; border-radius:10px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); background-size:200%; animation: shine 2.5s linear infinite; }
+
+/* Metric bars (legacy) compat */
+.metric { margin-top: 0.8rem; }
+.metric-label { font-size: 0.8rem; color: var(--txt-2); margin-bottom: 0.3rem; display:flex; justify-content:space-between; }
+.metric-bar-wrap { height: 9px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); }
+.metric-bar { height:100%; border-radius:10px; transition: width 1.2s var(--ease); position:relative; }
+
+/* Habit badge chips compat */
+.habits { display:flex; flex-wrap:wrap; gap: 0.5rem; margin-top: 0.7rem; }
+.habit {
+  display:flex; align-items:center; gap: 0.35rem;
+  padding: 0.4rem 0.75rem; border-radius: 24px; font-size: 0.78rem; font-weight: 600;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer; user-select: none; transition: all 0.3s var(--ease); color: var(--txt-2);
+}
+.habit:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
+.habit.done { border-color: rgba(105,240,174,0.4); background: rgba(105,240,174,0.08); color: #c8ffe0; box-shadow: 0 0 12px rgba(105,240,174,0.12); animation: glow 2.5s ease-in-out infinite; }
+.habit.done::before { content: '✓'; margin-right: 0.2rem; font-weight: 800; }
+
+/* Mini cards compat */
+.mini-cards { display:flex; gap: 0.7rem; flex-wrap:wrap; }
+.mini-card { flex:1; min-width: 90px; background: rgba(0,0,0,0.18); border-radius: 16px; padding: 0.9rem; text-align:center; border: 1px solid rgba(255,255,255,0.06); transition: transform 0.4s var(--ease), box-shadow 0.4s; }
+.mini-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+.mini-card .avatar { font-size: 1.9rem; margin-bottom: 0.25rem; transition: transform 0.4s ease; }
+.mini-card:hover .avatar { transform: scale(1.12) rotate(-4deg); }
+.mini-card .name { font-size: 0.8rem; font-weight: 700; color: #fff; }
+.mini-card .pts { font-size: 0.72rem; color: var(--txt-2); margin-top: 0.1rem; }
+
+/* Buttons compat */
+.btn { padding: 0.65rem 1rem; border-radius: 24px; font-weight: 700; font-size: 0.82rem; cursor: pointer; border: none; transition: transform 0.3s var(--ease), box-shadow 0.3s ease; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b1020; box-shadow: 0 6px 18px rgba(105,240,174,0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(105,240,174,0.38); }
+.btn-secondary { background: rgba(255,255,255,0.06); color: var(--txt); border: 1px solid rgba(255,255,255,0.12); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+/* Streak ring compat */
+.streak-ring { position: relative; width: 110px; height: 110px; margin: 0 auto 1rem; }
+.streak-ring svg { transform: rotate(-90deg); width: 110px; height: 110px; filter: drop-shadow(0 0 8px rgba(105,240,174,0.3)); }
+.streak-ring circle { fill: none; stroke-width: 9; transition: stroke-dashoffset 1.2s var(--ease); }
+.streak-ring .track  { stroke: rgba(255,255,255,0.08); }
+.streak-ring .progress { stroke: var(--accent); stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(105,240,174,0.4)); }
+.streak-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.streak-text .days  { font-size: 1.7rem; font-weight: 800; color: var(--accent); text-shadow: 0 0 10px rgba(105,240,174,0.35); }
+.streak-text .label { font-size: 0.6rem; color: var(--txt-2); text-transform: uppercase; letter-spacing: 2px; }
+
+/* Team badge compat */
+.team-badge { display: flex; gap: 0.4rem; align-items: center; padding: 0.45rem 0.9rem; border-radius: 30px; font-size: 0.82rem; }
+.team-level { font-weight: 700; color: var(--accent); }
+
+/* Animations */
+@keyframes revealDown { from { opacity:0; transform: translateY(-12px); } to { opacity:1; transform: translateY(0); } }
+@keyframes revealUp   { from { opacity:0; transform: translateY(12px) scale(0.985); } to { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes fadeIn     { from { opacity:0; } to { opacity:1; } }
+@keyframes modalUp    { from { opacity:0; transform: translateY(16px) scale(0.97); } to { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes shine      { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes float      { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes glow       { 0%,100% { box-shadow: 0 0 10px rgba(105,240,174,0.12); } 50% { box-shadow: 0 0 20px rgba(105,240,174,0.28); } }
+
+@media (max-width: 480px) {
+  body { padding: 0 0.8rem 6.5rem; }
+  .header-v2 .title-block h1 { font-size: 1.25rem; }
+  .tab-v2 { font-size: 0.78rem; padding: 0.5rem 0.7rem; min-width: 60px; }
+  .card { padding: 1.1rem; border-radius: var(--radius-md); }
+  .fab-v2 { width: 54px; height: 54px; font-size: 1.7rem; bottom: 18px; right: 18px; }
+  .modal-box { padding: 1.1rem; }
+}
+</style>
 </head>
 <body>
 
-<!-- Sync Panel (hidden by default, toggled) -->
-<div id="syncPanel" class="sync-panel glass" style="display:none;">
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="screen-login" class="screen login-wrap">
+  <div class="login-hero">🌟</div>
+  <div>
+    <div class="login-title">SGFIntegral</div>
+    <div class="login-sub">Familia en Modo Cooperativo. Bienestar compartido en tiempo real.</div>
+  </div>
+  <button id="btnGoogle" class="btn-google" style="max-width:300px;">
+    <svg class="gicon" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Continuar con Google
+  </button>
+  <div class="login-sub" style="font-size:0.78rem;opacity:0.7;">Tus datos se sincronizan de forma segura con Firebase.</div>
+</div>
+
+<!-- ══════════════ ONBOARDING: CREATE / JOIN FAMILY ══════════════ -->
+<div id="screen-family" class="screen login-wrap" style="justify-content:flex-start; padding-top: 3.4rem;">
+  <div class="login-hero" style="width:80px;height:80px;border-radius:24px;font-size:2.2rem;">👨‍👩‍👧</div>
+  <div style="width:100%;max-width:420px;">
+    <div class="login-title" style="font-size:1.3rem;">Tu Familia</div>
+    <div class="login-sub" style="margin-bottom:1.4rem;">Crea una nueva sala o únete con un código existente.</div>
+
+    <div class="ob-card glass" id="ob-create">
+      <h2>🏠 Crear Sala</h2>
+      <p>Un nombre para tu grupo familiar</p>
+      <input type="text" id="inpFamName" class="input-glass" placeholder="Ej: Familia García" maxlength="30" style="margin-bottom:0.7rem;">
+      <button id="btnCreateFam" class="btn-primary-wide" style="margin-bottom:0.5rem;">Crear sala</button>
+      <div id="createCode" style="display:none; margin-top:0.7rem;">
+        <div style="font-size:0.8rem;color:var(--txt-2);margin-bottom:0.3rem;">Comparte este código:</div>
+        <div id="lblCreateCode" class="input-glass" style="text-align:center;font-weight:800;letter-spacing:0.15em;font-size:1.2rem;color:var(--accent);border-style:dashed;">—</div>
+      </div>
+    </div>
+
+    <div class="divider" style="max-width:420px;width:100%;">o</div>
+
+    <div class="ob-card glass" id="ob-join">
+      <h2>🔗 Unirse a Sala</h2>
+      <p>Pega el código que te compartió un familiar</p>
+      <input type="text" id="inpJoinCode" class="input-glass" placeholder="Ej: ABC123" maxlength="10" style="text-transform:uppercase;margin-bottom:0.7rem;">
+      <button id="btnJoinFam" class="btn-secondary-wide">Unirse con código</button>
+      <div id="joinError" style="margin-top:0.5rem;font-size:0.82rem;color:var(--danger);text-align:center;display:none;"></div>
+    </div>
+
+    <div style="margin-top:1.2rem; text-align:center;">
+      <button id="btnLogoutOb" class="btn-secondary-wide" style="max-width:220px;display:inline-block;background:none;border:none;color:var(--txt-3);font-size:0.8rem;">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="screen-app" class="screen">
+
+  <!-- Header -->
+  <div class="header-v2">
+    <div class="title-block">
+      <h1>🌟 SGFIntegral</h1>
+      <p>Familia en Modo Cooperativo</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.55rem;flex-wrap:wrap;justify-content:flex-end;">
+      <button class="btn-sync" onclick="window.app.toggleSync(true)" title="Caja Fuerte Familiar" style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--txt);font-size:1.1rem;cursor:pointer;backdrop-filter:blur(6px);transition:all 0.3s ease;">🔒</button>
+      <div class="team-badge glass" style="display:none;" id="teamBadge">
+        <span>👑</span>
+        <span class="team-level" id="teamLevel">—</span>
+      </div>
+      <div class="user-pill" id="userPill" style="display:none;cursor:pointer;" title="Cerrar sesión">
+        <img id="userPhoto" src="" alt="">
+        <span id="userName">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-v2" id="tabsV2">
+    <div class="tab-v2 active" data-target="familia">🏠 Familia</div>
+    <div class="tab-v2" data-target="mateo">👤 Mateo</div>
+    <div class="tab-v2" data-target="monica">👤 Mónica</div>
+    <div class="tab-v2" data-target="moni">🌟 Moni</div>
+  </div>
+
+  <!-- Panel Familia -->
+  <div class="panel active" id="panel-familia">
+    <div class="grid">
+      <!-- Activity Feed -->
+      <div class="card hero glass" style="border-color: rgba(105,240,174,0.25);">
+        <div class="card-header"><span class="icon">🔥</span> Actividad en Tiempo Real</div>
+        <div id="activityLoading" style="text-align:center;color:var(--txt-3);padding:1rem 0;font-size:0.85rem;">Conectando al feed…</div>
+        <div class="feed-list" id="feedList" style="display:none;"></div>
+        <div id="feedEmpty" style="display:none;text-align:center;color:var(--txt-3);padding:0.8rem 0;font-size:0.85rem;">Nadie ha registrado actividad aún. ¡Sé el primero!</div>
+      </div>
+
+      <!-- Streaks + Goal -->
+      <div class="card glass" style="border-color: rgba(105,240,174,0.3);">
+        <div class="card-header"><span class="icon">🔥</span> Rachas Familiares</div>
+        <div style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:space-around;align-items:center;">
+          <div class="streak-ring">
+            <svg><circle class="track" cx="55" cy="55" r="46"/><circle id="ringFam" class="progress" stroke-dasharray="289" stroke-dashoffset="289"/></svg>
+            <div class="streak-text"><div class="days" id="streakFam">0</div><div class="label">DÍAS JUNTOS</div></div>
+          </div>
+          <div>
+            <div style="font-size:0.88rem;color:var(--txt-2);margin-bottom:0.4rem;">Objetivo semanal</div>
+            <div style="font-size:1.3rem;font-weight:800;color:var(--accent);text-shadow:0 0 12px rgba(105,240,174,0.3);">🎯 5 cenas familiares</div>
+            <div class="points-bar" style="margin-top:0.7rem;">
+              <div class="points-track"><div class="points-fill" id="barCenas" style="width:0%"></div></div>
+              <span id="txtCenas" style="font-size:0.8rem;color:var(--txt-2);font-weight:600;">0/5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Challenge -->
+      <div class="card glass" style="border-color: rgba(251,191,36,0.35);">
+        <div class="card-header"><span class="icon">⚡</span> Reto del Día</div>
+        <div style="font-size:1rem;margin-bottom:0.8rem;">Hoy ganamos <strong style="color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,0.3);">+50 pts</strong> si:</div>
+        <div class="habits" id="dailyChallenge">
+          <div class="habit" data-done="false">🥗 Todo el mundo incluye una verdura</div>
+          <div class="habit" data-done="false">🚶‍♀️ Familia hace 2000 pasos juntos</div>
+          <div class="habit" data-done="false">😴 Acostarse antes de las 23:30</div>
+        </div>
+      </div>
+
+      <!-- Habit Board -->
+      <div class="card full glass" style="border-color: rgba(79,195,247,0.3);">
+        <div class="card-header"><span class="icon">📋</span> Tablero de Hábitos</div>
+        <div style="display:grid;grid-template-columns: repeat(auto-fill, minmax(130px,1fr));gap:0.6rem;" id="habitBoard"></div>
+      </div>
+
+      <!-- Points -->
+      <div class="card glass" style="border-color: rgba(206,147,216,0.3);">
+        <div class="card-header"><span class="icon">🏆</span> Puntos esta Semana</div>
+        <div class="mini-cards" id="miniPoints">
+          <div class="mini-card"><div class="avatar">👨</div><div class="name">Mateo</div><div class="pts" id="ptsMateo">0</div></div>
+          <div class="mini-card"><div class="avatar">👩</div><div class="name">Mónica</div><div class="pts" id="ptsMonica">0</div></div>
+          <div class="mini-card"><div class="avatar">👧</div><div class="name">Moni</div><div class="pts" id="ptsMoni">0</div></div>
+        </div>
+        <div style="margin-top:1rem;font-size:0.82rem;color:var(--txt-2);">💡 Bonus de equipo: +20 pts cuando 2+ miembros cumplen el mismo hábito.</div>
+      </div>
+
+      <!-- Team Health -->
+      <div class="card glass" style="border-color: rgba(239,68,68,0.35);">
+        <div class="card-header"><span class="icon">❤️</span> Vida del Equipo</div>
+        <div style="font-size:2rem;letter-spacing:0.12rem;" id="teamHearts">❤️❤️❤️❤️❤️</div>
+        <div style="margin-top:0.5rem;font-size:0.82rem;color:var(--txt-2);line-height:1.45;">Pierdes ❤️ si coméis fuera más de 3 veces por semana o sin ejercicio 3 días seguidos.</div>
+      </div>
+
+      <!-- Level -->
+      <div class="card glass" style="border-color: rgba(167,139,250,0.3);">
+        <div class="card-header"><span class="icon">🎖️</span> Nivel Familiar</div>
+        <div style="display:flex;align-items:center;gap:1.2rem;">
+          <div style="font-size:3rem;filter:drop-shadow(0 0 10px rgba(167,139,250,0.3));animation: float 4s ease-in-out infinite;">🏅</div>
+          <div style="flex:1;">
+            <div style="font-size:1.25rem;font-weight:800;color:#c4b5fd;text-shadow:0 0 12px rgba(167,139,250,0.25);" id="levelName">—</div>
+            <div style="font-size:0.84rem;color:var(--txt-2);margin-top:0.2rem;" id="levelDesc">—</div>
+            <div class="points-bar" style="margin-top:0.6rem;">
+              <div class="points-track"><div class="points-fill" id="barLevel" style="width:0%;background:linear-gradient(90deg,#a78bfa,#818cf8);"></div></div>
+              <span id="txtLevel" style="font-size:0.78rem;color:var(--txt-2);white-space:nowrap;font-weight:600;">0/1000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panels personales -->
+  <div class="panel" id="panel-mateo"><div class="grid" id="grid-mateo"></div></div>
+  <div class="panel" id="panel-monica"><div class="grid" id="grid-monica"></div></div>
+  <div class="panel" id="panel-moni"><div class="grid" id="grid-moni"></div></div>
+
+</div><!-- /screen-app -->
+
+<!-- ══════════════ SYNC PANEL ══════════════ -->
+<div id="syncPanel" class="sync-panel glass">
   <div class="card-header"><span class="icon">🔒</span> Caja Fuerte Familiar</div>
   <div class="sync-body">
-    <div class="pin-input-group">
-      <label>PIN de 6 dígitos</label>
-      <input type="password" id="pinInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••">
+    <div>
+      <label style="display:block;font-size:0.78rem;color:var(--txt-2);margin-bottom:0.3rem;font-weight:600;">PIN de 6 dígitos</label>
+      <input type="password" id="pinInput" class="input-glass" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••" style="text-align:center;letter-spacing:0.3em;">
     </div>
-    <div class="sync-buttons">
-      <button class="btn btn-primary" onclick="app.exportData()">📤 Exportar Sala</button>
-      <button class="btn btn-secondary" onclick="app.importData()">📥 Importar Sala</button>
+    <div style="display:flex;gap:0.6rem;">
+      <button class="btn btn-primary" onclick="window.app.exportData()" style="flex:1;">📤 Exportar Sala</button>
+      <button class="btn btn-secondary" onclick="window.app.importData()" style="flex:1;">📥 Importar Sala</button>
     </div>
     <div id="syncStatus" class="sync-status"></div>
     <textarea id="syncBlob" class="sync-blob" placeholder="Pega aquí el código de sala…" rows="3"></textarea>
   </div>
-  <button class="btn-close-x" onclick="app.toggleSync(false)">✕</button>
+  <button class="btn-close-x" onclick="window.app.toggleSync(false)">✕</button>
 </div>
 
-<!-- Header -->
-<div class="header">
-  <div class="title-block">
-    <h1>🌟 SGFIntegral</h1>
-    <p>Familia en Modo Cooperativo</p>
-  </div>
-  <div class="header-actions">
-    <button class="btn-sync" onclick="app.toggleSync(true)" title="Caja Fuerte Familiar">🔒</button>
-    <div class="team-badge glass">
-      <span>👑</span>
-      <span class="team-level" id="teamLevel">—</span>
-    </div>
-  </div>
-</div>
+<!-- ══════════════ MODAL: ACTIVITY LOG (FAB) ══════════════ -->
+<div id="entryModal" class="modal-overlay">
+  <div class="modal-box" style="position:relative;">
+    <button class="modal-close" onclick="document.getElementById('entryModal').classList.remove('active')">✕</button>
+    <div class="modal-title">Registrar Actividad</div>
 
-<!-- Tabs -->
-<div class="tabs" id="tabs">
-  <div class="tab active" data-target="familia">🏠 Familia</div>
-  <div class="tab" data-target="mateo">👤 Mateo</div>
-  <div class="tab" data-target="monica">👤 Mónica</div>
-  <div class="tab" data-target="moni">🌟 Moni</div>
-</div>
-
-<!-- Panel Familia -->
-<div class="panel active" id="panel-familia">
-  <div class="grid">
-    <div class="card hero glass" style="border-color: rgba(105,240,174,0.3);">
-      <div class="card-header"><span class="icon">🔥</span> Rachas Familiares</div>
-      <div style="display:flex;flex-wrap:wrap;gap:2.5rem;justify-content:space-around;align-items:center;">
-        <div class="streak-ring">
-          <svg><circle class="track" cx="55" cy="55" r="46"/><circle id="ringFam" class="progress" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/></svg>
-          <div class="streak-text"><div class="days" id="streakFam">0</div><div class="label">DÍAS JUNTOS</div></div>
-        </div>
-        <div>
-          <div style="font-size:0.88rem;color:var(--text2);margin-bottom:0.4rem;">Objetivo semanal</div>
-          <div style="font-size:1.4rem;font-weight:800;color:var(--familia);text-shadow:0 0 12px rgba(105,240,174,0.3);">🎯 5 cenas familiares</div>
-          <div class="points-bar" style="margin-top:0.7rem;">
-            <div class="points-track"><div class="points-fill" id="barCenas" style="width:0%"></div></div>
-            <span id="txtCenas" style="font-size:0.82rem;color:var(--text2);font-weight:600;">0/5</span>
-          </div>
-        </div>
+    <div class="form-row">
+      <label>Tipo</label>
+      <div class="chip-row" id="actTypeChips">
+        <button class="chip active" data-type="ejercicio">🏋️ Ejercicio</button>
+        <button class="chip" data-type="pasos">🚶 Pasos</button>
+        <button class="chip" data-type="sueño">😴 Sueño</button>
+        <button class="chip" data-type="meditacion">🧘 Meditación</button>
+        <button class="chip" data-type="comida">🍽️ Comida</button>
+        <button class="chip" data-type="agua">💧 Agua</button>
+        <button class="chip" data-type="lectura">📖 Lectura</button>
+        <button class="chip" data-type="otro">✨ Otro</button>
       </div>
     </div>
 
-    <div class="card glass" style="border-color: rgba(251,191,36,0.35);">
-      <div class="card-header"><span class="icon">⚡</span> Reto del Día</div>
-      <div style="font-size:1.05rem;margin-bottom:0.9rem;">Hoy ganamos <strong style="color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,0.3);">+50 pts</strong> si:</div>
-      <div class="habits" id="dailyChallenge">
-        <div class="habit" data-done="false">🥗 Todo el mundo incluye una verdura</div>
-        <div class="habit" data-done="false">🚶‍♀️ Familia hace 2000 pasos juntos</div>
-        <div class="habit" data-done="false">😴 Acostarse antes de las 23:30</div>
+    <div class="form-row">
+      <label>Duración (min)</label>
+      <div class="slider-wrap">
+        <button class="slider-minus" onclick="window.app.sliderDelta(-5)">−</button>
+        <input type="range" id="actDuration" min="0" max="120" step="5" value="30" oninput="window.app.sliderInput(this.value, 'min')">
+        <button class="slider-plus" onclick="window.app.sliderDelta(5)">+</button>
       </div>
+      <div class="value-display" id="valDuration">30 min</div>
     </div>
 
-    <div class="card full glass" style="border-color: rgba(79,195,247,0.3);">
-      <div class="card-header"><span class="icon">📋</span> Tablero de Hábitos</div>
-      <div style="display:grid;grid-template-columns: repeat(auto-fill, minmax(140px,1fr));gap:0.7rem;" id="habitBoard"></div>
-    </div>
-
-    <div class="card glass" style="border-color: rgba(206,147,216,0.3);">
-      <div class="card-header"><span class="icon">🏆</span> Puntos esta Semana</div>
-      <div class="mini-cards" id="miniPoints">
-        <div class="mini-card"><div class="avatar">👨</div><div class="name">Mateo</div><div class="pts" id="ptsMateo">0</div></div>
-        <div class="mini-card"><div class="avatar">👩</div><div class="name">Mónica</div><div class="pts" id="ptsMonica">0</div></div>
-        <div class="mini-card"><div class="avatar">👧</div><div class="name">Moni</div><div class="pts" id="ptsMoni">0</div></div>
+    <div class="form-row">
+      <label>Calorías (~kcal)</label>
+      <div class="slider-wrap">
+        <button class="slider-minus" onclick="window.app.sliderDeltaCal(-10)">−</button>
+        <input type="range" id="actCalories" min="0" max="800" step="10" value="150" oninput="window.app.sliderInput(this.value, 'kcal')">
+        <button class="slider-plus" onclick="window.app.sliderDeltaCal(10)">+</button>
       </div>
-      <div style="margin-top:1.2rem;font-size:0.85rem;color:var(--text2);">💡 Bonus de equipo: +20 pts cuando 2+ miembros cumplen el mismo hábito.</div>
+      <div class="value-display" id="valCalories">150 kcal</div>
     </div>
 
-    <div class="card glass" style="border-color: rgba(239,68,68,0.35);">
-      <div class="card-header"><span class="icon">❤️</span> Vida del Equipo</div>
-      <div style="font-size:2.2rem;letter-spacing:0.15rem;" id="teamHearts">❤️❤️❤️❤️❤️</div>
-      <div style="margin-top:0.6rem;font-size:0.85rem;color:var(--text2);line-height:1.45;">Pierdes ❤️ si coméis fuera más de 3 veces por semana o sin ejercicio 3 días seguidos.</div>
+    <div class="form-row">
+      <label>Notas</label>
+      <input type="text" id="actNotes" class="input-glass" placeholder="Opcional: descripción corta…">
     </div>
 
-    <div class="card glass" style="border-color: rgba(167,139,250,0.3);">
-      <div class="card-header"><span class="icon">🎖️</span> Nivel Familiar</div>
-      <div style="display:flex;align-items:center;gap:1.2rem;">
-        <div style="font-size:3.2rem;filter:drop-shadow(0 0 10px rgba(167,139,250,0.3));animation: float 4s ease-in-out infinite;">🏅</div>
-        <div style="flex:1;">
-          <div style="font-size:1.35rem;font-weight:800;color:#c4b5fd;text-shadow:0 0 12px rgba(167,139,250,0.25);" id="levelName">—</div>
-          <div style="font-size:0.86rem;color:var(--text2);margin-top:0.25rem;" id="levelDesc">—</div>
-          <div class="points-bar" style="margin-top:0.7rem;">
-            <div class="points-track"><div class="points-fill" id="barLevel" style="width:0%;background:linear-gradient(90deg,#a78bfa,#818cf8);"></div></div>
-            <span id="txtLevel" style="font-size:0.8rem;color:var(--text2);white-space:nowrap;font-weight:600;">0/1000</span>
-          </div>
-        </div>
-      </div>
+    <div style="display:flex;gap:0.6rem;margin-top:0.6rem;">
+      <button class="btn btn-primary" onclick="window.app.saveActivity()" style="flex:1.5;">Guardar</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('entryModal').classList.remove('active')" style="flex:1;">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- Panel Mateo -->
-<div class="panel" id="panel-mateo"><div class="grid" id="grid-mateo"></div></div>
-<div class="panel" id="panel-monica"><div class="grid" id="grid-monica"></div></div>
-<div class="panel" id="panel-moni"><div class="grid" id="grid-moni"></div></div>
-
-<!-- Celebration Overlay -->
+<!-- ══════════════ CELEBRATION ══════════════ -->
 <div class="celebration" id="celebration">
   <div class="celebration-box">
     <div class="celebration-emoji">🎉</div>
@@ -138,42 +664,221 @@
   </div>
 </div>
 
-<!-- Data entry prompt (simple inline) -->
-<!-- Quick Log FAB (floating) -->
-<button class="fab" id="fabLog" onclick="app.ui.openQuickLog()" title="Registrar rápido">＋</button>
+<!-- ══════════════ FAB ══════════════ -->
+<button class="fab-v2" id="fabLog" onclick="window.app.openActivityModal()" title="Registrar actividad">＋</button>
 
-<!-- Slider Entry Modal -->
-<div id="entryModal" class="celebration">
-  <div class="celebration-box" style="max-width:380px;">
-    <h2 id="entryTitle" style="font-size:1.1rem;color:var(--familia);margin-bottom:0.6rem;font-weight:800;">Registrar dato</h2>
-    <div id="entryBody"></div>
-    <div class="entry-value-display" id="entryValueDisplay">—</div>
-    <div style="display:flex;gap:0.6rem;margin-top:1.2rem;">
-      <button class="btn btn-primary" onclick="app.saveEntry()">Guardar</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('entryModal').classList.remove('active')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
 <script type="module">
+import { Auth } from './js/auth.js';
+import { DB } from './js/db.js';
+/* Legacy local modules (kept for fallback / local-first) */
 import { Storage } from './js/storage.js';
 import { Gamification } from './js/gamification.js';
-import { UI } from './js/ui.js';
-import { Data } from './js/data.js';
+import { UI as LegacyUI } from './js/ui.js';
+import { Data as LegacyData } from './js/data.js';
+
+const NAMES = { mateo:'Mateo', monica:'Mónica', moni:'Moni' };
+const COLORS = { mateo:'#4fc3f7', monica:'#f48fb1', moni:'#ce93d8', familia:'#69f0ae' };
+
+/* ── App orchestrator ── */
+const state = {
+  user: null,
+  familyId: null,
+  activities: [],
+  members: [],
+  presets: { duration: { step:5, min:0, max:120, val:30 }, calories: { step:10, min:0, max:800, val:150 } }
+};
+
+const auth = new Auth((u) => { state.user = u; app.onAuthChange(u); });
+const db = new DB(auth);
 
 window.app = {
+  auth, db, state,
+  /* Legacy local-first support */
   storage: new Storage(),
   gamification: new Gamification(),
-  ui: new UI(),
-  data: new Data(),
+  legacyUI: new LegacyUI(),
+  data: new LegacyData(),
 
-  init() {
-    this.ui.renderTabs();
-    this.ui.renderFamilia(this.data.getAll(), this.gamification);
-    this.ui.setupListeners(this);
-    this.registerSW();
+  /* ── Auth flow ── */
+  onAuthChange(u) {
+    const loginScreen = document.getElementById('screen-login');
+    const familyScreen = document.getElementById('screen-family');
+    const appScreen = document.getElementById('screen-app');
+    const userPill = document.getElementById('userPill');
+    const userPhoto = document.getElementById('userPhoto');
+    const userName = document.getElementById('userName');
+
+    if (!u) {
+      this.showScreen('screen-login');
+      userPill.style.display = 'none';
+      return;
+    }
+
+    // Show user pill
+    userPill.style.display = 'flex';
+    userPhoto.src = u.photoURL || '';
+    userPhoto.alt = u.displayName || 'Usuario';
+    userName.textContent = (u.displayName || u.email?.split('@')[0] || 'Tú');
+    userPill.onclick = () => { if(confirm('¿Cerrar sesión?')) auth.logout(); };
+
+    const savedFamily = localStorage.getItem('sgf-familyId');
+    if (savedFamily) {
+      state.familyId = savedFamily;
+      this.showScreen('screen-app');
+      this.initApp();
+    } else {
+      this.showScreen('screen-family');
+    }
   },
 
+  showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id); if (el) el.classList.add('active');
+  },
+
+  async googleLogin() {
+    try { await auth.login(); } catch(e) { alert('No se pudo iniciar sesión: ' + (e.message||e)); }
+  },
+
+  /* ── Family onboarding ── */
+  async createFamily() {
+    const inp = document.getElementById('inpFamName');
+    const name = (inp.value || '').trim();
+    if (!name) { alert('Escribe un nombre para la familia'); return; }
+    if (!state.user) { alert('Inicia sesión primero'); return; }
+    try {
+      const code = await db.createFamily(name, state.user);
+      auth.setFamily(code);
+      state.familyId = code;
+      document.getElementById('createCode').style.display = 'block';
+      document.getElementById('lblCreateCode').textContent = code;
+      setTimeout(() => { this.showScreen('screen-app'); this.initApp(); }, 1200);
+    } catch(e) { alert('Error al crear sala: ' + e.message); }
+  },
+
+  async joinFamily() {
+    const inp = document.getElementById('inpJoinCode');
+    const code = (inp.value || '').trim().toUpperCase();
+    if (!code) { alert('Introduce un código'); return; }
+    if (!state.user) { alert('Inicia sesión primero'); return; }
+    const errEl = document.getElementById('joinError');
+    try {
+      await db.joinFamily(code, state.user);
+      auth.setFamily(code);
+      state.familyId = code;
+      errEl.style.display = 'none';
+      this.showScreen('screen-app');
+      this.initApp();
+    } catch(e) { errEl.style.display = 'block'; errEl.textContent = e.message || 'Código no encontrado'; }
+  },
+
+  /* ── Init main app ── */
+  initApp() {
+    this.legacyUI.renderTabs();
+    this.legacyUI.renderFamilia(this.data.getAll(), this.gamification);
+    this.legacyUI.setupListeners(this);
+    this.registerSW();
+
+    // V2: realtime subscriptions
+    if (state.familyId) {
+      this._unsubActs = db.subscribeActivities(items => {
+        state.activities = items;
+        this.renderFeed();
+      });
+      this._unsubMembers = db.subscribeMembers(items => {
+        state.members = items;
+      });
+    }
+  },
+
+  /* ── Realtime Activity Feed ── */
+  renderFeed() {
+    const list = document.getElementById('feedList');
+    const loading = document.getElementById('activityLoading');
+    const empty = document.getElementById('feedEmpty');
+    loading.style.display = 'none';
+
+    if (!state.activities || state.activities.length === 0) {
+      list.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    list.style.display = 'flex';
+    empty.style.display = 'none';
+
+    const now = Date.now();
+    const fmtDate = (ts) => {
+      if (!ts) return 'ahora';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      const diff = Math.round((now - d.getTime())/60000);
+      if (diff < 1) return 'ahora';
+      if (diff < 60) return `hace ${diff}m`;
+      if (diff < 1440) return `hace ${Math.floor(diff/60)}h`;
+      return d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+    };
+
+    const typeIcons = {
+      ejercicio:'🏋️', pasos:'🚶', sueño:'😴', meditacion:'🧘',
+      comida:'🍽️', agua:'💧', lectura:'📖', otro:'✨'
+    };
+
+    list.innerHTML = state.activities.slice(0, 30).map(a => {
+      const icon = typeIcons[a.type] || '✨';
+      const name = a.userName || 'Alguien';
+      const dur = a.duration ? `${a.duration} min` : '';
+      const cal = a.calories ? `• ${a.calories} kcal` : '';
+      const note = a.notes ? `<div class="feed-text">${escapeHtml(a.notes)}</div>` : '';
+      return `
+        <div class="feed-item" data-id="${a.id}">
+          <div class="feed-avatar">${(state.members.find(m=>m.id===a.uid)?.name||'').charAt(0).toUpperCase()||'👤'}</div>
+          <div class="feed-body">
+            <div class="feed-top">
+              <span class="feed-name">${escapeHtml(name)}</span>
+              <span class="feed-time">${fmtDate(a.date)}</span>
+            </div>
+            <div style="display:flex;gap:0.4rem;align-items:center;">
+              <span class="feed-badge">${icon} ${a.type}</span>
+              ${dur ? `<span style="font-size:0.78rem;color:var(--txt-3)">${dur} ${cal}</span>` : ''}
+            </div>
+            ${note}
+          </div>
+        </div>`;
+    }).join('');
+  },
+
+  /* ── Activity Modal (FAB) ── */
+  openActivityModal() {
+    document.getElementById('entryModal').classList.add('active');
+    // Default type: ejercicio
+    document.querySelectorAll('#actTypeChips .chip').forEach(b=>b.classList.remove('active'));
+    const def = document.querySelector('#actTypeChips .chip[data-type="ejercicio"]');
+    if (def) def.classList.add('active');
+  },
+
+  sliderInput(val, unit) {
+    const v = parseInt(val,10);
+    if (unit === 'min') { document.getElementById('valDuration').textContent = v + ' min'; state.presets.duration.val = v; }
+    if (unit === 'kcal') { document.getElementById('valCalories').textContent = v + ' kcal'; state.presets.calories.val = v; }
+  },
+
+  sliderDelta(d) { const p=state.presets.duration; let v=p.val+d; v=Math.max(p.min,Math.min(p.max,v)); document.getElementById('actDuration').value=v; this.sliderInput(v,'min'); },
+  sliderDeltaCal(d) { const p=state.presets.calories; let v=p.val+d; v=Math.max(p.min,Math.min(p.max,v)); document.getElementById('actCalories').value=v; this.sliderInput(v,'kcal'); },
+
+  async saveActivity() {
+    const typeBtn = document.querySelector('#actTypeChips .chip.active');
+    const type = typeBtn ? typeBtn.dataset.type : 'otro';
+    const duration = parseInt(document.getElementById('actDuration').value,10)||0;
+    const calories = parseInt(document.getElementById('actCalories').value,10)||0;
+    const notes = document.getElementById('actNotes').value.trim();
+    try {
+      await db.addActivity({ type, duration, calories, notes });
+      document.getElementById('entryModal').classList.remove('active');
+      document.getElementById('actNotes').value = '';
+    } catch(e) { alert('Error al guardar: ' + (e.message||e)); }
+  },
+
+  /* ── Encrypted sync (legacy) ── */
   exportData() {
     const pin = document.getElementById('pinInput').value;
     if (!/^\d{6}$/.test(pin)) { this.setSyncStatus('PIN debe ser 6 dígitos', 'error'); return; }
@@ -187,32 +892,30 @@ window.app = {
     if (!/^\d{6}$/.test(pin)) { this.setSyncStatus('PIN debe ser 6 dígitos', 'error'); return; }
     const blob = document.getElementById('syncBlob').value.trim();
     if (!blob) { this.setSyncStatus('Pega el código de sala primero', 'error'); return; }
-    try {
-      this.storage.importEncrypted(pin, blob);
-      this.setSyncStatus('¡Datos sincronizados! Recarga…', 'success');
-      setTimeout(() => location.reload(), 1500);
-    } catch(e) { this.setSyncStatus(e.message || 'PIN incorrecto o código corrupto', 'error'); }
+    try { this.storage.importEncrypted(pin, blob); this.setSyncStatus('¡Datos sincronizados! Recarga…', 'success'); setTimeout(()=>location.reload(), 1500); }
+    catch(e) { this.setSyncStatus(e.message || 'PIN incorrecto o código corrupto', 'error'); }
   },
 
   toggleSync(show) {
-    document.getElementById('syncPanel').style.display = show ? 'block' : 'none';
+    const el = document.getElementById('syncPanel');
+    if (show) el.classList.add('show'); else el.classList.remove('show');
   },
 
   setSyncStatus(msg, type) {
-    const el = document.getElementById('syncStatus');
-    el.textContent = msg;
-    el.className = 'sync-status ' + type;
+    const el = document.getElementById('syncStatus'); el.textContent = msg; el.className = 'sync-status ' + type;
   },
 
+  /* ── Legacy entry modal (quick log) compat ── */
   saveEntry() {
-    const key = document.getElementById('entryKey').value;
-    const val = document.getElementById('entryVal').value;
-    const person = document.getElementById('entryPerson').value;
+    const key = document.getElementById('entryKey')?.value;
+    const val = document.getElementById('entryVal')?.value;
+    const person = document.getElementById('entryPerson')?.value;
+    if (!key || val===undefined || !person) return;
     this.data.set(person, key, parseFloat(val));
     this.storage.save(this.data.getAll());
-    document.getElementById('entryModal').classList.remove('active');
-    this.ui.renderFamilia(this.data.getAll(), this.gamification);
-    ['mateo','monica','moni'].forEach(p => this.ui.renderPerson(p, this.data.getAll()[p], this.gamification));
+    const m = document.getElementById('entryModal'); if(m) m.classList.remove('active');
+    this.legacyUI.renderFamilia(this.data.getAll(), this.gamification);
+    ['mateo','monica','moni'].forEach(p => this.legacyUI.renderPerson(p, this.data.getAll()[p], this.gamification));
   },
 
   async registerSW() {
@@ -222,7 +925,57 @@ window.app = {
   }
 };
 
-app.init();
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+/* ── Wire DOM listeners after DOM ready ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const btnGoogle = document.getElementById('btnGoogle');
+  if (btnGoogle) btnGoogle.addEventListener('click', () => app.googleLogin());
+
+  const btnCreate = document.getElementById('btnCreateFam');
+  if (btnCreate) btnCreate.addEventListener('click', () => app.createFamily());
+
+  const btnJoin = document.getElementById('btnJoinFam');
+  if (btnJoin) btnJoin.addEventListener('click', () => app.joinFamily());
+
+  const btnLogoutOb = document.getElementById('btnLogoutOb');
+  if (btnLogoutOb) btnLogoutOb.addEventListener('click', () => auth.logout());
+
+  // Activity type chips
+  document.querySelectorAll('#actTypeChips .chip').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#actTypeChips .chip').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+
+  // Tabs v2
+  document.querySelectorAll('.tab-v2').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-v2').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById('panel-' + tab.dataset.target);
+      if (panel) { panel.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+      // Render legacy personal tab
+      const p = tab.dataset.target;
+      if (['mateo','monica','moni'].includes(p)) {
+        app.legacyUI.renderPerson(p, app.data.getAll()[p], app.gamification);
+      }
+    });
+  });
+
+  // Close modals on backdrop click
+  document.querySelectorAll('.modal-overlay, .celebration').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+  });
+});
+
+// If user already known at module load, trigger
+if (state.user) app.onAuthChange(state.user);
 </script>
 </body>
 </html>
