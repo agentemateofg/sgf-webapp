@@ -48,16 +48,28 @@ export class DB {
     const fid = this.auth.familyId;
     if (!fid) throw new Error('Sin familia');
     const user = this.auth.user;
-    return addDoc(this.actsRef(fid), {
+    const docData = {
       uid: user.uid,
       userName: user.displayName || user.email.split('@')[0],
       type: data.type,
-      duration: data.duration,
+      duration: data.duration || 0,
       calories: data.calories || 0,
       notes: data.notes || '',
       date: serverTimestamp(),
       createdAt: serverTimestamp()
-    });
+    };
+    if (data.proteins !== undefined) docData.proteins = parseInt(data.proteins, 10) || 0;
+    if (data.carbs !== undefined) docData.carbs = parseInt(data.carbs, 10) || 0;
+    if (data.fats !== undefined) docData.fats = parseInt(data.fats, 10) || 0;
+    if (data.fiber !== undefined) docData.fiber = parseInt(data.fiber, 10) || 0;
+    return addDoc(this.actsRef(fid), docData);
+  }
+
+  // Delete activity
+  async deleteActivity(id) {
+    const fid = this.auth.familyId;
+    if (!fid) throw new Error('Sin familia');
+    return deleteDoc(doc(db, 'families', fid, 'activities', id));
   }
 
   // Subscribe to activities (real-time)

@@ -4,6 +4,11 @@
  * v2: Quick Log FAB con chips + slider táctil.
  */
 
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
 const NAMES = { mateo:'Mateo', monica:'Mónica', moni:'Moni' };
 const COLORS = { mateo:'#4fc3f7', monica:'#f48fb1', moni:'#ce93d8', familia:'#69f0ae' };
 
@@ -230,6 +235,64 @@ export class UI {
     this._renderStars(`wEstresStars_${person}`, `wEstres_${person}`, pData.nivel_estres||3, '#ef4444');
     this._renderStars(`wEnergiaStars_${person}`, `wEnergia_${person}`, pData.nivel_energia||3, col);
 
+    // ── Card 2.5: Alimentación y Macronutrientes ──
+    const nCard = document.createElement('div');
+    nCard.className = 'card glass';
+    nCard.style.borderColor = '#fbbf2455';
+    
+    const calCons = pData.calorias_consumidas || 0;
+    const calObj = pData.calorias_objetivo || 2000;
+    const protCons = pData.proteinas_g || 0;
+    const protObj = pData.proteinas_objetivo || 120;
+    const carbCons = pData.carbos_g || 0;
+    const carbObj = pData.carbos_objetivo || 220;
+    const fatCons = pData.grasas_g || 0;
+    const fatObj = pData.grasas_objetivo || 70;
+    const fibCons = pData.fibra_g || 0;
+    const fibObj = pData.fibra_objetivo || 25;
+
+    nCard.innerHTML = `
+      <div class="card-header"><span class="icon">🥗</span> Alimentación y Macros</div>
+      <div class="metric">
+        <div class="metric-label">
+          <span>🔥 Calorías</span>
+          <span style="color:var(--txt-2)">${calCons.toLocaleString()} / ${calObj.toLocaleString()} kcal</span>
+        </div>
+        <div class="metric-bar-wrap">
+          <div class="metric-bar" style="width:0%;background:linear-gradient(90deg, #fbbf24, #f59e0b);"></div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.5rem; margin-top:0.9rem; text-align:center;">
+        <div style="background:rgba(0,0,0,0.15); padding:0.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.03); min-width:0;">
+          <div style="font-size:0.72rem; color:var(--txt-3); text-transform:uppercase; font-weight:600; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Proteínas</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#f48fb1; margin:0.15rem 0;">${protCons}g</div>
+          <div style="font-size:0.65rem; color:var(--txt-3); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Obj: ${protObj}g</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.15); padding:0.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.03); min-width:0;">
+          <div style="font-size:0.72rem; color:var(--txt-3); text-transform:uppercase; font-weight:600; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Carbos</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#4fc3f7; margin:0.15rem 0;">${carbCons}g</div>
+          <div style="font-size:0.65rem; color:var(--txt-3); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Obj: ${carbObj}g</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.15); padding:0.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.03); min-width:0;">
+          <div style="font-size:0.72rem; color:var(--txt-3); text-transform:uppercase; font-weight:600; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Grasas</div>
+          <div style="font-size:1.05rem; font-weight:800; color:#a78bfa; margin:0.15rem 0;">${fatCons}g</div>
+          <div style="font-size:0.65rem; color:var(--txt-3); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Obj: ${fatObj}g</div>
+        </div>
+      </div>
+      <div style="margin-top:0.7rem; font-size:0.75rem; color:var(--txt-3); display:flex; justify-content:space-between; padding:0 0.2rem;">
+        <span>🌾 Fibra: <strong style="color:var(--txt-2)">${fibCons}g / ${fibObj}g</strong></span>
+        <span style="cursor:pointer; text-decoration:underline; color:#fbbf24;" onclick="window.app.ui.openMealsList('${person}')">🍽️ Ver platos</span>
+      </div>
+    `;
+    grid.appendChild(nCard);
+
+    requestAnimationFrame(() => {
+      const bar = nCard.querySelector('.metric-bar');
+      setTimeout(() => {
+        if (bar) bar.style.width = Math.min(100, Math.round(100 * calCons / calObj)) + '%';
+      }, 80);
+    });
+
     // ── Card 3: Gráfico SVG semanal de Actividades ──
     const chartCard = document.createElement('div');
     chartCard.className = 'card glass full';
@@ -374,5 +437,80 @@ export class UI {
       if (p < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+  }
+
+  /* ── Nutrition Meals List Modal ── */
+  openMealsList(person) {
+    const modal = document.getElementById('entryModal');
+    document.getElementById('entryTitle').textContent = `Platos de hoy — ${NAMES[person]}`;
+    document.getElementById('entryValueDisplay').textContent = '';
+
+    const appState = window.app?.state;
+    const activities = appState?.activities || [];
+    const members = appState?.members || [];
+    const todayStr = new Date().toLocaleDateString('sv-SE');
+
+    const personMeals = [];
+    activities.forEach(act => {
+      const actDate = act.date?.toDate ? act.date.toDate() : new Date(act.date || act.createdAt);
+      const actDateStr = actDate.toLocaleDateString('sv-SE');
+      
+      if (actDateStr === todayStr && act.type === 'comida') {
+        const member = members.find(m => m.id === act.uid);
+        if (member) {
+          const pKey = window.app?.getPersonKey(member.id, member.name, member.email);
+          if (pKey === person) {
+            personMeals.push({
+              id: act.id,
+              time: actDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+              notes: act.notes || 'Plato registrado',
+              calories: act.calories || 0,
+              proteins: act.proteins || 0,
+              carbs: act.carbs || 0,
+              fats: act.fats || 0,
+              fiber: act.fiber || 0
+            });
+          }
+        }
+      }
+    });
+
+    let html = '';
+    if (personMeals.length === 0) {
+      html = '<div style="text-align:center;color:var(--txt-3);padding:2rem;">No hay platos hoy. ¡Pídele a Hermes o regístralo arriba!</div>';
+    } else {
+      html = '<div style="display:flex; flex-direction:column; gap:0.8rem; max-height: 320px; overflow-y:auto; padding-right:0.3rem;">';
+      personMeals.forEach(meal => {
+        html += `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:0.8rem; border-radius:16px; position:relative;">
+            <button class="modal-close" style="font-size:0.8rem; top:8px; right:8px; position:absolute;" onclick="window.app.ui.deleteMeal('${meal.id}', '${person}')">✕</button>
+            <div style="font-size:0.75rem; color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🕒 ${meal.time}</div>
+            <div style="font-size:0.9rem; font-weight:700; color:#fff; margin-bottom:0.4rem; padding-right:1.2rem;">${escapeHtml(meal.notes)}</div>
+            <div style="display:flex; gap:0.6rem; font-size:0.75rem; color:var(--txt-2); flex-wrap:wrap;">
+              <span>🔥 <strong>${meal.calories}</strong> kcal</span>
+              <span>🥩 P: <strong>${meal.proteins}g</strong></span>
+              <span>🌾 C: <strong>${meal.carbs}g</strong></span>
+              <span>🥑 G: <strong>${meal.fats}g</strong></span>
+              ${meal.fiber > 0 ? `<span>🌿 F: <strong>${meal.fiber}g</strong></span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+
+    document.getElementById('entryBody').innerHTML = html;
+    modal.classList.add('active');
+  }
+
+  async deleteMeal(id, person) {
+    if (confirm('¿Eliminar este plato?')) {
+      try {
+        await window.app.db.deleteActivity(id);
+        document.getElementById('entryModal').classList.remove('active');
+      } catch(e) {
+        alert('Error al eliminar: ' + e.message);
+      }
+    }
   }
 }

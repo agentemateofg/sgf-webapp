@@ -777,8 +777,30 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
       <div class="value-display" id="valCalories">150 kcal</div>
     </div>
 
+    <div class="form-row" id="rowNutrition" style="display:none; flex-direction:column; gap:0.6rem;">
+      <label>Nutrientes / Macronutrientes</label>
+      <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+        <div style="flex:1;">
+          <label style="font-size:0.75rem; color:var(--txt-2); display:block; margin-bottom:0.25rem; text-align:center;">Proteínas</label>
+          <input type="number" id="actProteins" class="input-glass" placeholder="0g" min="0" max="300" style="padding:0.5rem; text-align:center; width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:0.75rem; color:var(--txt-2); display:block; margin-bottom:0.25rem; text-align:center;">Carbos</label>
+          <input type="number" id="actCarbs" class="input-glass" placeholder="0g" min="0" max="500" style="padding:0.5rem; text-align:center; width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:0.75rem; color:var(--txt-2); display:block; margin-bottom:0.25rem; text-align:center;">Grasas</label>
+          <input type="number" id="actFats" class="input-glass" placeholder="0g" min="0" max="250" style="padding:0.5rem; text-align:center; width:100%;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:0.75rem; color:var(--txt-2); display:block; margin-bottom:0.25rem; text-align:center;">Fibra</label>
+          <input type="number" id="actFiber" class="input-glass" placeholder="0g" min="0" max="100" style="padding:0.5rem; text-align:center; width:100%;">
+        </div>
+      </div>
+    </div>
+
     <div class="form-row">
-      <label>Notas</label>
+      <label id="lblNotes">Notas</label>
       <input type="text" id="actNotes" class="input-glass" placeholder="Opcional: descripción corta…">
     </div>
 
@@ -857,6 +879,11 @@ window.app = {
     ['mateo', 'monica', 'moni'].forEach(p => {
       base[p].pasos_diarios = 0;
       base[p].sueno_horas = 0;
+      base[p].calorias_consumidas = 0;
+      base[p].proteinas_g = 0;
+      base[p].carbos_g = 0;
+      base[p].grasas_g = 0;
+      base[p].fibra_g = 0;
     });
 
     // Sum activities for today
@@ -874,6 +901,12 @@ window.app = {
                 base[pKey].pasos_diarios += parseInt(act.duration, 10) || 0;
               } else if (act.type === 'sueño') {
                 base[pKey].sueno_horas += parseFloat(act.duration) || 0;
+              } else if (act.type === 'comida') {
+                base[pKey].calorias_consumidas += parseInt(act.calories, 10) || 0;
+                base[pKey].proteinas_g += parseInt(act.proteins, 10) || 0;
+                base[pKey].carbos_g += parseInt(act.carbs, 10) || 0;
+                base[pKey].grasas_g += parseInt(act.fats, 10) || 0;
+                base[pKey].fibra_g += parseInt(act.fiber, 10) || 0;
               }
             }
           }
@@ -1147,10 +1180,20 @@ window.app = {
     const rngDur = document.getElementById('actDuration');
     const rowCal = document.getElementById('rowCalories');
     const valDur = document.getElementById('valDuration');
+    const rowNut = document.getElementById('rowNutrition');
+    const notesInput = document.getElementById('actNotes');
     
     let min = 0, max = 120, step = 5, def = 30, unit = 'min';
     let showCalories = true;
     let calVal = 150;
+
+    // Reset default styling & visibility
+    if (rowNut) rowNut.style.display = 'none';
+    if (lblDur) lblDur.parentElement.style.display = 'block';
+    if (notesInput) {
+      document.getElementById('lblNotes').textContent = 'Notas';
+      notesInput.placeholder = 'Opcional: descripción corta…';
+    }
 
     if (type === 'pasos') {
       lblDur.textContent = 'Pasos caminados';
@@ -1174,9 +1217,15 @@ window.app = {
       min = 0; max = 120; step = 5; def = 15; unit = 'min';
       showCalories = false;
     } else if (type === 'comida') {
-      lblDur.textContent = 'Comidas/Cenas';
-      min = 0; max = 5; step = 1; def = 3; unit = 'veces';
-      showCalories = false;
+      if (lblDur) lblDur.parentElement.style.display = 'none';
+      if (rowNut) rowNut.style.display = 'flex';
+      if (notesInput) {
+        document.getElementById('lblNotes').textContent = 'Plato / Comida';
+        notesInput.placeholder = 'Ej: Pechuga de pollo con arroz integral y aguacate';
+      }
+      showCalories = true;
+      min = 0; max = 2000; step = 10; def = 500; unit = 'kcal';
+      calVal = 500;
     } else {
       lblDur.textContent = 'Duración (min)';
       min = 0; max = 180; step = 5; def = 45; unit = 'min';
@@ -1236,14 +1285,29 @@ window.app = {
   async saveActivity() {
     const typeBtn = document.querySelector('#actTypeChips .chip.active');
     const type = typeBtn ? typeBtn.dataset.type : 'otro';
-    const duration = parseFloat(document.getElementById('actDuration').value)||0;
+    const duration = type === 'comida' ? 0 : (parseFloat(document.getElementById('actDuration').value)||0);
     const rowCal = document.getElementById('rowCalories');
     const calories = rowCal.style.display !== 'none' ? (parseInt(document.getElementById('actCalories').value,10)||0) : 0;
     const notes = document.getElementById('actNotes').value.trim();
+
+    let proteins = 0, carbs = 0, fats = 0, fiber = 0;
+    if (type === 'comida') {
+      proteins = parseInt(document.getElementById('actProteins').value, 10) || 0;
+      carbs = parseInt(document.getElementById('actCarbs').value, 10) || 0;
+      fats = parseInt(document.getElementById('actFats').value, 10) || 0;
+      fiber = parseInt(document.getElementById('actFiber').value, 10) || 0;
+    }
+
     try {
-      await this.db.addActivity({ type, duration, calories, notes });
+      await this.db.addActivity({ type, duration, calories, notes, proteins, carbs, fats, fiber });
       document.getElementById('entryModal').classList.remove('active');
       document.getElementById('actNotes').value = '';
+      if (type === 'comida') {
+        document.getElementById('actProteins').value = '';
+        document.getElementById('actCarbs').value = '';
+        document.getElementById('actFats').value = '';
+        document.getElementById('actFiber').value = '';
+      }
     } catch(e) { alert('Error al guardar: ' + (e.message||e)); }
   },
 
